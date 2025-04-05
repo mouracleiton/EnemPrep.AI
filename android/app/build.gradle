@@ -87,14 +87,9 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0.0"
+        versionName "0.0.1-alpha"
 
         buildConfigField("boolean", "REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS", (findProperty("reactNative.unstable_useRuntimeSchedulerAlways") ?: true).toString())
-    }
-
-    // Add this to fix image processing issues
-    aaptOptions {
-        noCompress "png", "webp"
     }
     signingConfigs {
         debug {

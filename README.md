@@ -158,28 +158,24 @@ Este script oferece várias opções:
 
 ### Manualmente com EAS Build
 
-1. Instale o EAS CLI:
-
+1. Instale o EAS CLI se ainda não tiver
 ```bash
 npm install --save-dev eas-cli
 ```
 
-2. Faça login na sua conta Expo:
-
+2. Faça login na sua conta Expo
 ```bash
 npx eas login
 ```
 
-3. Configure o projeto para build:
-
+3. Configure o projeto para build
 ```bash
 npx eas build:configure
 ```
 
-4. Inicie o build do APK:
-
+4. Inicie o build de produção
 ```bash
-npx eas build --platform android --profile preview
+npx eas build --platform android --profile production
 ```
 
 5. Aguarde o build ser concluído e baixe o APK pelo link fornecido.

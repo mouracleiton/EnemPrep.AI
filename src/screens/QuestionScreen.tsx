@@ -24,7 +24,7 @@ const { width } = Dimensions.get('window');
 const QuestionScreen = () => {
   const route = useRoute<QuestionScreenRouteProp>();
   const navigation = useNavigation<QuestionScreenNavigationProp>();
-  const { questionId } = route.params;
+  const { questionId, studySessionId } = route.params;
 
   const [question, setQuestion] = useState<Question | null>(null);
   const [selectedAlternative, setSelectedAlternative] = useState<string | null>(null);
@@ -58,14 +58,43 @@ const QuestionScreen = () => {
     setIsCorrect(correct);
     setAnswered(true);
 
-    // Save the answer
-    DataService.saveUserAnswer(questionId, selectedAlternative, correct);
+    // Save the answer with study session if available
+    DataService.saveUserAnswer(questionId, selectedAlternative, correct, studySessionId);
   };
 
   const handleNextQuestion = () => {
-    // Get the next question in the same discipline
+    // Get the next question based on context
     if (!question) return;
 
+    // If we're in a study session, check if there are more questions
+    if (studySessionId) {
+      const session = DataService.getStudySessionById(studySessionId);
+
+      if (session && session.questionsAnswered < session.questionCount) {
+        // Get more questions from the same disciplines
+        const questions = DataService.getRandomQuestionsForStudy(
+          session.disciplines,
+          1, // Just get one more question
+          true // Exclude already answered questions
+        );
+
+        if (questions.length > 0) {
+          const nextQuestion = questions[0];
+          navigation.replace('Question', {
+            questionId: `${nextQuestion.year}-${nextQuestion.index}`,
+            studySessionId
+          });
+          return;
+        }
+      }
+
+      // If we've reached the end of the study session or no more questions,
+      // navigate to the study results screen
+      navigation.navigate('StudyResults', { studySessionId });
+      return;
+    }
+
+    // Default behavior for non-study session questions
     const questions = DataService.getQuestionsByDiscipline(question.discipline);
     const currentIndex = questions.findIndex(q =>
       q.year === question.year && q.index === question.index
@@ -84,7 +113,11 @@ const QuestionScreen = () => {
 
   const handleViewLesson = () => {
     if (question?.lesson) {
-      navigation.navigate('Lesson', { questionId });
+      // Record that the user viewed the lesson
+      DataService.recordLessonView(questionId, studySessionId);
+
+      // Navigate to the lesson screen
+      navigation.navigate('Lesson', { questionId, studySessionId });
     } else {
       Alert.alert('Informação', 'Esta questão não possui aula disponível');
     }

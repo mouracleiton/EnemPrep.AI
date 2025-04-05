@@ -46,17 +46,31 @@ export interface UserAnswer {
   selectedAlternative: string;
   isCorrect: boolean;
   timestamp: number;
+  viewedLesson?: boolean;
+  studySession?: string;
+}
+
+export interface StudySession {
+  id: string;
+  timestamp: number;
+  disciplines: string[];
+  questionCount: number;
+  questionsAnswered: number;
+  correctAnswers: number;
+  lessonsViewed: number;
 }
 
 class DataService {
   private data: any = null;
   private userAnswers: UserAnswer[] = [];
+  private studySessions: StudySession[] = [];
   private isLoading: boolean = false;
   private onDataLoadedCallbacks: (() => void)[] = [];
   private onLoadingStatusCallbacks: ((status: string) => void)[] = [];
 
   constructor() {
     this.loadUserAnswers();
+    this.loadStudySessions();
     this.loadLocalData();
   }
 
@@ -268,6 +282,31 @@ class DataService {
     }
   }
 
+  private async loadStudySessions() {
+    try {
+      // For web, we'll use localStorage if available
+      if (typeof localStorage !== 'undefined') {
+        const savedSessions = localStorage.getItem('studySessions');
+        if (savedSessions) {
+          this.studySessions = JSON.parse(savedSessions);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading study sessions:', error);
+    }
+  }
+
+  private async saveStudySessions() {
+    try {
+      // For web, we'll use localStorage if available
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('studySessions', JSON.stringify(this.studySessions));
+      }
+    } catch (error) {
+      console.error('Error saving study sessions:', error);
+    }
+  }
+
   getExams(): Exam[] {
     if (!this.data) return [];
     return this.data.exams || [];
@@ -338,7 +377,7 @@ class DataService {
     );
   }
 
-  saveUserAnswer(questionId: string, selectedAlternative: string, isCorrect: boolean) {
+  saveUserAnswer(questionId: string, selectedAlternative: string, isCorrect: boolean, studySessionId?: string) {
     const answer: UserAnswer = {
       questionId,
       selectedAlternative,
@@ -346,9 +385,27 @@ class DataService {
       timestamp: Date.now(),
     };
 
+    if (studySessionId) {
+      answer.studySession = studySessionId;
+
+      // Update study session statistics
+      const sessionIndex = this.studySessions.findIndex(s => s.id === studySessionId);
+      if (sessionIndex >= 0) {
+        this.studySessions[sessionIndex].questionsAnswered++;
+        if (isCorrect) {
+          this.studySessions[sessionIndex].correctAnswers++;
+        }
+        this.saveStudySessions();
+      }
+    }
+
     // Update if exists, otherwise add
     const existingIndex = this.userAnswers.findIndex(a => a.questionId === questionId);
     if (existingIndex >= 0) {
+      // Preserve viewedLesson status if it exists
+      if (this.userAnswers[existingIndex].viewedLesson) {
+        answer.viewedLesson = this.userAnswers[existingIndex].viewedLesson;
+      }
       this.userAnswers[existingIndex] = answer;
     } else {
       this.userAnswers.push(answer);
@@ -361,25 +418,120 @@ class DataService {
     return this.userAnswers;
   }
 
+  recordLessonView(questionId: string, studySessionId?: string) {
+    // Find the answer for this question
+    const answerIndex = this.userAnswers.findIndex(a => a.questionId === questionId);
+
+    if (answerIndex >= 0) {
+      // Update the existing answer
+      this.userAnswers[answerIndex].viewedLesson = true;
+      this.saveUserAnswers();
+    } else {
+      // Create a new record just for the lesson view
+      const answer: UserAnswer = {
+        questionId,
+        selectedAlternative: '',
+        isCorrect: false,
+        timestamp: Date.now(),
+        viewedLesson: true
+      };
+
+      if (studySessionId) {
+        answer.studySession = studySessionId;
+      }
+
+      this.userAnswers.push(answer);
+      this.saveUserAnswers();
+    }
+
+    // Update study session if provided
+    if (studySessionId) {
+      const sessionIndex = this.studySessions.findIndex(s => s.id === studySessionId);
+      if (sessionIndex >= 0) {
+        this.studySessions[sessionIndex].lessonsViewed++;
+        this.saveStudySessions();
+      }
+    }
+  }
+
+  createStudySession(disciplines: string[], questionCount: number): StudySession {
+    const session: StudySession = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      disciplines,
+      questionCount,
+      questionsAnswered: 0,
+      correctAnswers: 0,
+      lessonsViewed: 0
+    };
+
+    this.studySessions.push(session);
+    this.saveStudySessions();
+
+    return session;
+  }
+
+  getStudySessions(): StudySession[] {
+    return this.studySessions;
+  }
+
+  getStudySessionById(id: string): StudySession | undefined {
+    return this.studySessions.find(s => s.id === id);
+  }
+
+  getRandomQuestionsForStudy(disciplines: string[], count: number, excludeAnswered: boolean = false): Question[] {
+    if (!this.data) return [];
+
+    // Get all questions for the selected disciplines
+    let availableQuestions = this.getAllQuestions().filter(q => disciplines.includes(q.discipline));
+
+    // Optionally exclude already answered questions
+    if (excludeAnswered) {
+      const answeredIds = new Set(this.userAnswers.map(a => a.questionId));
+      availableQuestions = availableQuestions.filter(q => !answeredIds.has(`${q.year}-${q.index}`));
+    }
+
+    // If we don't have enough questions, just return what we have
+    if (availableQuestions.length <= count) {
+      return availableQuestions;
+    }
+
+    // Shuffle the questions and take the requested count
+    return this.shuffleArray(availableQuestions).slice(0, count);
+  }
+
+  private shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
   getUserStatistics() {
     const total = this.userAnswers.length;
     const correct = this.userAnswers.filter(a => a.isCorrect).length;
     const incorrect = total - correct;
     const accuracy = total > 0 ? (correct / total) * 100 : 0;
+    const lessonsViewed = this.userAnswers.filter(a => a.viewedLesson).length;
 
     // Get statistics by discipline
-    const disciplineStats: Record<string, { total: number; correct: number }> = {};
+    const disciplineStats: Record<string, { total: number; correct: number; lessonsViewed: number }> = {};
 
     this.userAnswers.forEach(answer => {
       const question = this.getQuestionById(answer.questionId);
       if (question) {
         const discipline = question.discipline;
         if (!disciplineStats[discipline]) {
-          disciplineStats[discipline] = { total: 0, correct: 0 };
+          disciplineStats[discipline] = { total: 0, correct: 0, lessonsViewed: 0 };
         }
         disciplineStats[discipline].total += 1;
         if (answer.isCorrect) {
           disciplineStats[discipline].correct += 1;
+        }
+        if (answer.viewedLesson) {
+          disciplineStats[discipline].lessonsViewed += 1;
         }
       }
     });
@@ -389,6 +541,7 @@ class DataService {
       correct,
       incorrect,
       accuracy,
+      lessonsViewed,
       disciplineStats
     };
   }

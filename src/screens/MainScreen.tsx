@@ -68,6 +68,24 @@ const MainScreen = () => {
         </Text>
       </View>
 
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity
+          style={[styles.mainButton, styles.studyButton]}
+          onPress={() => navigation.navigate('Study')}
+        >
+          <Text style={styles.mainButtonText}>Estudo Personalizado</Text>
+          <Text style={styles.mainButtonSubtext}>Escolha disciplinas e quantidade de questões</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.mainButton, styles.statsButton]}
+          onPress={() => navigation.navigate('Stats')}
+        >
+          <Text style={styles.mainButtonText}>Estatísticas</Text>
+          <Text style={styles.mainButtonSubtext}>Acompanhe seu desempenho e progresso</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.sectionTitle}>Provas Disponíveis</Text>
 
       <FlatList
@@ -184,6 +202,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#3498db',
     fontWeight: 'bold',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginVertical: 8,
+  },
+  mainButton: {
+    flex: 1,
+    borderRadius: 10,
+    padding: 16,
+    margin: 8,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  studyButton: {
+    backgroundColor: '#27ae60',
+  },
+  statsButton: {
+    backgroundColor: '#3498db',
+  },
+  mainButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  mainButtonSubtext: {
+    fontSize: 12,
+    color: '#fff',
+    opacity: 0.9,
+    textAlign: 'center',
   },
 });
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Alert 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,11 +18,11 @@ type LessonScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const LessonScreen = () => {
   const route = useRoute<LessonScreenRouteProp>();
   const navigation = useNavigation<LessonScreenNavigationProp>();
-  const { questionId } = route.params;
-  
+  const { questionId, studySessionId } = route.params;
+
   const [lesson, setLesson] = useState<string | null>(null);
   const [title, setTitle] = useState<string>('');
-  
+
   useEffect(() => {
     const loadLesson = () => {
       const question = DataService.getQuestionById(questionId);
@@ -34,10 +34,10 @@ const LessonScreen = () => {
         navigation.goBack();
       }
     };
-    
+
     loadLesson();
   }, [questionId, navigation]);
-  
+
   if (!lesson) {
     return (
       <View style={styles.loadingContainer}>
@@ -45,7 +45,7 @@ const LessonScreen = () => {
       </View>
     );
   }
-  
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
@@ -53,14 +53,14 @@ const LessonScreen = () => {
           <Text style={styles.lessonTitle}>Aula Explicativa</Text>
           <Text style={styles.lessonSubtitle}>{title}</Text>
         </View>
-        
+
         <View style={styles.lessonContent}>
           <Text style={styles.lessonText}>{lesson}</Text>
         </View>
       </ScrollView>
-      
+
       <View style={styles.actionContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.actionButton}
           onPress={() => navigation.goBack()}
         >
