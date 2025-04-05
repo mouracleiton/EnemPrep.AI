@@ -1,41 +1,49 @@
 {
   "expo": {
-    "name": "EnemPrepAppExpo",
-    "slug": "EnemPrepAppExpo",
+    "name": "ENEM Prep AI",
+    "slug": "enem-prep-ai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/icon.png",
+    "scheme": "enemprepai",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#3498db"
+    },
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/img/*",
+      "assets/images/*",
+      "assets/enem_data_with_lessons.json"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.enemprepai",
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch"],
+        "NSPhotoLibraryUsageDescription": "Este aplicativo não precisa de acesso à sua biblioteca de fotos."
+      },
+      "jsEngine": "hermes"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#3498db"
+      },
+      "package": "com.enemprepai",
+      "permissions": [],
+      "versionCode": 1,
+      "jsEngine": "hermes"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+      "expo-file-system"
     ],
-    "experiments": {
-      "typedRoutes": true
+    "extra": {
+      "eas": {
+        "projectId": "enem-prep-ai"
+      }
     }
   }
 }
