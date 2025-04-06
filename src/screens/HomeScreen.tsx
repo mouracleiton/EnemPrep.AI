@@ -165,6 +165,24 @@ const HomeScreen = () => {
             </Text>
           </View>
         </View>
+
+        <View style={styles.featureCard}>
+          <View style={styles.featureIcon}>
+            <Text style={styles.featureIconText}>❤️</Text>
+          </View>
+          <View style={styles.featureContent}>
+            <Text style={styles.featureTitle}>Apoie o Desenvolvedor</Text>
+            <Text style={styles.featureDescription}>
+              Ajude a manter o aplicativo gratuito e com novas funcionalidades
+            </Text>
+            <TouchableOpacity
+              style={styles.supportButton}
+              onPress={() => navigation.navigate('Support')}
+            >
+              <Text style={styles.supportButtonText}>Apoiar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
@@ -320,6 +338,19 @@ const styles = StyleSheet.create({
   featureDescription: {
     fontSize: 14,
     color: '#666',
+  },
+  supportButton: {
+    backgroundColor: '#e74c3c',
+    borderRadius: 5,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  supportButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 

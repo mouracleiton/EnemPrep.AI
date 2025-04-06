@@ -10,12 +10,14 @@ import ExamsScreen from '../screens/ExamsScreen';
 import QuestionScreen from '../screens/QuestionScreen';
 import StatsScreen from '../screens/StatsScreen';
 import LessonScreen from '../screens/LessonScreen';
+import SupportScreen from '../screens/SupportScreen';
 
 // Define the types for our navigation
 export type RootStackParamList = {
   Main: undefined;
   Question: { questionId: string };
   Lesson: { questionId: string };
+  Support: undefined;
 };
 
 export type MainTabParamList = {
@@ -104,6 +106,11 @@ const AppNavigator = () => {
           name="Lesson"
           component={LessonScreen}
           options={{ title: 'Aula' }}
+        />
+        <Stack.Screen
+          name="Support"
+          component={SupportScreen}
+          options={{ title: 'Apoie o Desenvolvedor' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
