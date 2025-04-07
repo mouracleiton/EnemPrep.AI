@@ -9,10 +9,27 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}=== Criando APK local para ENEM Prep AI ===${NC}"
 
+# Verificar se o JAVA_HOME está configurado
+if [ -z "$JAVA_HOME" ]; then
+  echo -e "${YELLOW}! Variável JAVA_HOME não configurada${NC}"
+
+  # Tentar encontrar o Java Home
+  if command -v /usr/libexec/java_home &> /dev/null; then
+    JAVA_HOME=$(/usr/libexec/java_home)
+    echo -e "${GREEN}✓ Java Home encontrado em $JAVA_HOME${NC}"
+    export JAVA_HOME
+  else
+    echo -e "${RED}✗ Não foi possível encontrar o Java Home. Por favor, instale o JDK.${NC}"
+    exit 1
+  fi
+fi
+
+echo -e "${GREEN}✓ Java configurado em $JAVA_HOME${NC}"
+
 # Verificar se o Android SDK está configurado
 if [ -z "$ANDROID_HOME" ]; then
   echo -e "${YELLOW}! Variável ANDROID_HOME não configurada${NC}"
-  
+
   # Tentar encontrar o Android SDK
   if [ -d "$HOME/Android/Sdk" ]; then
     ANDROID_SDK="$HOME/Android/Sdk"
@@ -25,7 +42,7 @@ if [ -z "$ANDROID_HOME" ]; then
     echo -e "${YELLOW}Você pode usar o script setup_android_sdk.sh para configurar o ambiente.${NC}"
     exit 1
   fi
-  
+
   # Configurar variáveis de ambiente
   echo -e "${BLUE}Configurando variáveis de ambiente temporárias...${NC}"
   export ANDROID_HOME=$ANDROID_SDK
@@ -41,12 +58,12 @@ echo -e "${GREEN}✓ Android SDK configurado em $ANDROID_HOME${NC}"
 if [ ! -d "node_modules" ]; then
   echo -e "${YELLOW}! Dependências não encontradas. Instalando...${NC}"
   npm install --legacy-peer-deps
-  
+
   if [ $? -ne 0 ]; then
     echo -e "${RED}✗ Falha ao instalar dependências. Verifique os erros acima.${NC}"
     exit 1
   fi
-  
+
   echo -e "${GREEN}✓ Dependências instaladas com sucesso${NC}"
 else
   echo -e "${GREEN}✓ Dependências já instaladas${NC}"
