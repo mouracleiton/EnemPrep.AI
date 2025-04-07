@@ -16,6 +16,7 @@
       "assets/splash.png",
       "assets/adaptive-icon.png",
       "assets/favicon.png",
+      "assets/enem_data.json",
       "assets/enem_data_reduced.json",
       "assets/img/*.png"
     ],
@@ -34,7 +35,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.clouradev.enemprepai",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

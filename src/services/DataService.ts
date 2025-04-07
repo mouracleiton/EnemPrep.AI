@@ -7,12 +7,20 @@ const mockEnemData = {
       "year": 2023,
       "disciplines": [
         {
-          "label": "Matemática",
-          "value": "matematica"
+          "label": "Ciências Humanas e suas Tecnologias",
+          "value": "ciencias-humanas"
         },
         {
-          "label": "Português",
-          "value": "portugues"
+          "label": "Ciências da Natureza e suas Tecnologias",
+          "value": "ciencias-natureza"
+        },
+        {
+          "label": "Linguagens, Códigos e suas Tecnologias",
+          "value": "linguagens"
+        },
+        {
+          "label": "Matemática e suas Tecnologias",
+          "value": "matematica"
         }
       ],
       "languages": [
@@ -31,7 +39,7 @@ const mockEnemData = {
     {
       "title": "Questão 1",
       "index": 1,
-      "discipline": "matematica",
+      "discipline": "ciencias-humanas",
       "language": null,
       "year": 2023,
       "context": "Considere a seguinte situação-problema...",
@@ -60,7 +68,7 @@ const mockEnemData = {
 // Try to import the JSON file, but use mock data if it fails
 let enemData;
 try {
-  enemData = require('../../assets/enem_data_with_lessons.json');
+  enemData = require('../../assets/enem_data.json');
 } catch (e) {
   console.warn('Failed to load JSON file, using mock data');
   enemData = mockEnemData;
@@ -170,7 +178,7 @@ class DataService {
       if (!dataLoaded) {
         try {
           console.log('Tentando carregar dados do diretório de documentos...');
-          const fileUri = FileSystem.documentDirectory + 'enem_data_with_lessons.json';
+          const fileUri = FileSystem.documentDirectory + 'enem_data.json';
           const fileExists = await FileSystem.getInfoAsync(fileUri);
 
           if (fileExists.exists) {
@@ -190,12 +198,12 @@ class DataService {
       if (!dataLoaded) {
         try {
           console.log('Tentando carregar dados do diretório do bundle...');
-          const assetUri = FileSystem.bundleDirectory + 'assets/enem_data_with_lessons.json';
+          const assetUri = FileSystem.bundleDirectory + 'assets/enem_data.json';
           const assetExists = await FileSystem.getInfoAsync(assetUri);
 
           if (assetExists.exists) {
             // Copy to document directory for future use
-            const fileUri = FileSystem.documentDirectory + 'enem_data_with_lessons.json';
+            const fileUri = FileSystem.documentDirectory + 'enem_data.json';
             await FileSystem.copyAsync({
               from: assetUri,
               to: fileUri
