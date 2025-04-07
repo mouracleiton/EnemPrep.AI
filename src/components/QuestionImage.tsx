@@ -31,11 +31,21 @@ const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
     }
 
     try {
-      // Get the filename from the source
-      const filename = source.split('/').pop() || '';
+      // Get the filename from the source, handling URLs from enem.dev
+      let filename = '';
+
+      // Check if the source is a URL from enem.dev
+      if (source.includes('enem.dev')) {
+        // Extract just the filename from the URL
+        const urlParts = source.split('/');
+        filename = urlParts[urlParts.length - 1];
+        console.log(`Converted enem.dev URL to filename: ${filename}`);
+      } else {
+        filename = source.split('/').pop() || '';
+      }
 
       // First try to use the mapping (works for all platforms)
-      const mappedImage = getQuestionImage(source);
+      const mappedImage = getQuestionImage(filename);
       if (mappedImage) {
         setImageUri(mappedImage);
         setLoading(false);

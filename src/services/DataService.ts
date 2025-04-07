@@ -307,24 +307,54 @@ class DataService {
 
     // Update image paths in questions
     this.data.questions.forEach((question: Question) => {
-      // Count images in question files
+      // Process and count images in question files
       if (question.files && question.files.length > 0) {
         totalImages += question.files.length;
-        question.files.forEach(file => {
+
+        // Process each file path
+        for (let i = 0; i < question.files.length; i++) {
+          const file = question.files[i];
           if (file) {
-            const filename = file.split('/').pop();
-            if (filename) uniqueImages.add(filename);
+            // Check if the file is a URL from enem.dev
+            if (file.includes('enem.dev')) {
+              // Extract just the filename from the URL
+              const urlParts = file.split('/');
+              const filename = urlParts[urlParts.length - 1];
+              if (filename) {
+                uniqueImages.add(filename);
+                // Replace the URL with just the filename
+                question.files[i] = filename;
+                console.log(`Converted enem.dev URL to filename in question files: ${file} -> ${filename}`);
+              }
+            } else {
+              const filename = file.split('/').pop();
+              if (filename) uniqueImages.add(filename);
+            }
           }
-        });
+        }
       }
 
-      // Count images in alternatives
+      // Process and count images in alternatives
       if (question.alternatives && question.alternatives.length > 0) {
-        question.alternatives.forEach(alt => {
+        question.alternatives.forEach((alt, index) => {
           if (alt.file) {
             totalImages++;
-            const filename = alt.file.split('/').pop();
-            if (filename) uniqueImages.add(filename);
+
+            // Check if the file is a URL from enem.dev
+            if (alt.file.includes('enem.dev')) {
+              // Extract just the filename from the URL
+              const urlParts = alt.file.split('/');
+              const filename = urlParts[urlParts.length - 1];
+              if (filename) {
+                uniqueImages.add(filename);
+                // Replace the URL with just the filename
+                question.alternatives[index].file = filename;
+                console.log(`Converted enem.dev URL to filename in alternative: ${alt.file} -> ${filename}`);
+              }
+            } else {
+              const filename = alt.file.split('/').pop();
+              if (filename) uniqueImages.add(filename);
+            }
           }
         });
       }

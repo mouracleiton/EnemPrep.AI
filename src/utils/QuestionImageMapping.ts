@@ -1809,15 +1809,25 @@ const imageMapping: Record<string, any> = {
 };
 
 /**
- * Get the image source for a given filename
- * @param filename The image filename
+ * Get the image source for a given filename or URL
+ * @param filenameOrUrl The image filename or URL
  * @returns The image source
  */
-export function getQuestionImage(filename: string | null) {
-  if (!filename) return null;
+export function getQuestionImage(filenameOrUrl: string | null) {
+  if (!filenameOrUrl) return null;
 
-  // Extract just the filename without path
-  const baseFilename = filename.split('/').pop();
+  // Handle URLs from enem.dev
+  let baseFilename: string;
+  if (filenameOrUrl.includes('enem.dev')) {
+    // Extract just the filename from the URL
+    const urlParts = filenameOrUrl.split('/');
+    baseFilename = urlParts[urlParts.length - 1];
+    console.log(`Processing enem.dev URL: ${filenameOrUrl} -> ${baseFilename}`);
+  } else {
+    // Extract just the filename without path
+    baseFilename = filenameOrUrl.split('/').pop() || '';
+  }
+
   if (!baseFilename) return null;
 
   // First try exact match

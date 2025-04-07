@@ -15,6 +15,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import DataService, { Question, Alternative } from '../services/DataService';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import QuestionImage from '../components/QuestionImage';
+import QuestionContext from '../components/QuestionContext';
 
 type QuestionScreenRouteProp = RouteProp<RootStackParamList, 'Question'>;
 type QuestionScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -146,7 +147,7 @@ const QuestionScreen = () => {
         </View>
 
         <View style={styles.contextContainer}>
-          <Text style={styles.contextText}>{question.context}</Text>
+          <QuestionContext context={question.context} style={styles.contextText} />
 
           {/* Display question images in order */}
           {question.files && question.files.length > 0 && (
