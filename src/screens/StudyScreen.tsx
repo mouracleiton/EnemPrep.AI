@@ -28,44 +28,45 @@ const StudyScreen = () => {
   useEffect(() => {
     // Load disciplines when data is available
     DataService.onDataLoaded(() => {
-      const exams = DataService.getExams();
-      // Get all unique disciplines from all exams
-      const allDisciplines = new Set<string>();
-      const disciplineObjects: Discipline[] = [];
-      
-      exams.forEach(exam => {
-        exam.disciplines.forEach(discipline => {
-          if (!allDisciplines.has(discipline.value)) {
-            allDisciplines.add(discipline.value);
-            disciplineObjects.push(discipline);
-          }
-        });
-      });
-      
-      setDisciplines(disciplineObjects);
-      setLoading(false);
+      loadDisciplines();
     });
-    
+
     // Check if data is already loaded
     if (DataService.isDataLoaded()) {
-      const exams = DataService.getExams();
-      // Get all unique disciplines from all exams
-      const allDisciplines = new Set<string>();
-      const disciplineObjects: Discipline[] = [];
-      
-      exams.forEach(exam => {
-        exam.disciplines.forEach(discipline => {
-          if (!allDisciplines.has(discipline.value)) {
-            allDisciplines.add(discipline.value);
-            disciplineObjects.push(discipline);
-          }
-        });
-      });
-      
-      setDisciplines(disciplineObjects);
-      setLoading(false);
+      loadDisciplines();
     }
   }, []);
+
+  const loadDisciplines = () => {
+    const exams = DataService.getExams();
+    // Get all unique disciplines from all exams
+    const allDisciplines = new Set<string>();
+    const disciplineObjects: Discipline[] = [];
+
+    exams.forEach(exam => {
+      exam.disciplines.forEach(discipline => {
+        if (!allDisciplines.has(discipline.value)) {
+          allDisciplines.add(discipline.value);
+          disciplineObjects.push(discipline);
+        }
+      });
+    });
+
+    // Get disciplines that have questions
+    const disciplinesWithQuestions = DataService.getDisciplinesWithQuestions();
+    console.log('Disciplines with questions:', disciplinesWithQuestions);
+
+    // Filter disciplines to only include those with questions
+    const filteredDisciplines = disciplineObjects.filter(discipline =>
+      disciplinesWithQuestions.includes(discipline.value)
+    );
+
+    console.log('All disciplines:', disciplineObjects.map(d => d.value));
+    console.log('Filtered disciplines:', filteredDisciplines.map(d => d.value));
+
+    setDisciplines(filteredDisciplines);
+    setLoading(false);
+  };
 
   const toggleDiscipline = (disciplineValue: string) => {
     setSelectedDisciplines(prev => {
@@ -89,21 +90,32 @@ const StudyScreen = () => {
       return;
     }
 
+    // Log selected disciplines for debugging
+    console.log('Selected disciplines:', selectedDisciplines);
+
     // Create a new study session
     const session = DataService.createStudySession(selectedDisciplines, count);
-    
+
     // Get random questions for the selected disciplines
     const questions = DataService.getRandomQuestionsForStudy(
-      selectedDisciplines, 
+      selectedDisciplines,
       count,
       excludeAnswered
     );
-    
+
+    // Log the questions we got for debugging
+    console.log(`Got ${questions.length} questions for study`);
+    const questionsByDiscipline: {[key: string]: number} = {};
+    questions.forEach(q => {
+      questionsByDiscipline[q.discipline] = (questionsByDiscipline[q.discipline] || 0) + 1;
+    });
+    console.log('Questions by discipline:', questionsByDiscipline);
+
     if (questions.length === 0) {
       alert('Não foram encontradas questões para as disciplinas selecionadas');
       return;
     }
-    
+
     // Navigate to the first question
     const firstQuestion = questions[0];
     navigation.navigate('Question', {
@@ -147,7 +159,7 @@ const StudyScreen = () => {
                 ]}
                 onPress={() => toggleDiscipline(discipline.value)}
               >
-                <Text 
+                <Text
                   style={[
                     styles.disciplineText,
                     selectedDisciplines.includes(discipline.value) && styles.disciplineTextSelected

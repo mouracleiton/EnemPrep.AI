@@ -502,6 +502,30 @@ class DataService {
     }
   }
 
+  getDisciplinesWithQuestions(): string[] {
+    try {
+      if (!this.data) return [];
+
+      const allQuestions = this.getAllQuestions();
+      if (!allQuestions || allQuestions.length === 0) {
+        return [];
+      }
+
+      // Get unique disciplines that have questions
+      const disciplinesWithQuestions = new Set<string>();
+      allQuestions.forEach(question => {
+        if (question.discipline) {
+          disciplinesWithQuestions.add(question.discipline);
+        }
+      });
+
+      return Array.from(disciplinesWithQuestions);
+    } catch (e) {
+      console.error('Error in getDisciplinesWithQuestions:', e);
+      return [];
+    }
+  }
+
   getQuestionsByLanguage(language: string): Question[] {
     try {
       if (!this.data) return [];
@@ -693,8 +717,27 @@ class DataService {
   getRandomQuestionsForStudy(disciplines: string[], count: number, excludeAnswered: boolean = false): Question[] {
     if (!this.data) return [];
 
+    // Get all questions
+    const allQuestions = this.getAllQuestions();
+
+    // Log the total number of questions and their disciplines
+    console.log(`Total questions: ${allQuestions.length}`);
+    const disciplineCounts: {[key: string]: number} = {};
+    allQuestions.forEach(q => {
+      disciplineCounts[q.discipline] = (disciplineCounts[q.discipline] || 0) + 1;
+    });
+    console.log('Questions per discipline:', disciplineCounts);
+
     // Get all questions for the selected disciplines
-    let availableQuestions = this.getAllQuestions().filter(q => disciplines.includes(q.discipline));
+    let availableQuestions = allQuestions.filter(q => disciplines.includes(q.discipline));
+
+    // Log the available questions for the selected disciplines
+    console.log(`Available questions for selected disciplines: ${availableQuestions.length}`);
+    const selectedDisciplineCounts: {[key: string]: number} = {};
+    availableQuestions.forEach(q => {
+      selectedDisciplineCounts[q.discipline] = (selectedDisciplineCounts[q.discipline] || 0) + 1;
+    });
+    console.log('Selected questions per discipline:', selectedDisciplineCounts);
 
     // Optionally exclude already answered questions
     if (excludeAnswered) {
@@ -707,8 +750,54 @@ class DataService {
       return availableQuestions;
     }
 
-    // Shuffle the questions and take the requested count
-    return this.shuffleArray(availableQuestions).slice(0, count);
+    // Ensure we have questions from all selected disciplines if possible
+    const result: Question[] = [];
+    const questionsPerDiscipline: {[key: string]: Question[]} = {};
+
+    // Group questions by discipline
+    availableQuestions.forEach(q => {
+      if (!questionsPerDiscipline[q.discipline]) {
+        questionsPerDiscipline[q.discipline] = [];
+      }
+      questionsPerDiscipline[q.discipline].push(q);
+    });
+
+    // Shuffle each discipline's questions
+    Object.keys(questionsPerDiscipline).forEach(discipline => {
+      questionsPerDiscipline[discipline] = this.shuffleArray(questionsPerDiscipline[discipline]);
+    });
+
+    // Calculate how many questions to take from each discipline
+    const disciplinesWithQuestions = Object.keys(questionsPerDiscipline);
+    const questionsPerDisciplineCount = Math.max(1, Math.floor(count / disciplinesWithQuestions.length));
+
+    // Take questions from each discipline
+    disciplinesWithQuestions.forEach(discipline => {
+      const disciplineQuestions = questionsPerDiscipline[discipline];
+      const toTake = Math.min(questionsPerDisciplineCount, disciplineQuestions.length);
+      result.push(...disciplineQuestions.slice(0, toTake));
+    });
+
+    // If we still need more questions, take them from any discipline
+    if (result.length < count) {
+      // Flatten all remaining questions
+      const remainingQuestions = this.shuffleArray(
+        disciplinesWithQuestions.flatMap(discipline => {
+          const taken = Math.min(questionsPerDisciplineCount, questionsPerDiscipline[discipline].length);
+          return questionsPerDiscipline[discipline].slice(taken);
+        })
+      );
+
+      // Add remaining questions up to the count
+      result.push(...remainingQuestions.slice(0, count - result.length));
+    }
+
+    // If we have too many questions, trim the result
+    if (result.length > count) {
+      return result.slice(0, count);
+    }
+
+    return result;
   }
 
   private shuffleArray<T>(array: T[]): T[] {
