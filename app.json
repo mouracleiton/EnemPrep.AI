@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "EnemPrepAI",
+    "slug": "enemprepappexpo",
+    "version": "0.0.3",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "assets/icon.png",
+      "assets/splash.png",
+      "assets/adaptive-icon.png",
+      "assets/favicon.png",
+      "assets/enem_data_reduced.json",
+      "assets/img/*.png"
+    ],
+    "android": {
+      "versionCode": 3,
+      "package": "com.clouradev.enemprepai",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "59e43c3a-a7e3-4bc6-8dd7-7fd3a0f00404"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.clouradev.enemprepai",
+      "supportsTablet": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
