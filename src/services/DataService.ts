@@ -326,6 +326,16 @@ class DataService {
                 question.files[i] = filename;
                 console.log(`Converted enem.dev URL to filename in question files: ${file} -> ${filename}`);
               }
+            } else if (file.includes('assets/img/')) {
+              // Extract just the filename from the assets/img path
+              const urlParts = file.split('/');
+              const filename = urlParts[urlParts.length - 1];
+              if (filename) {
+                uniqueImages.add(filename);
+                // Replace the URL with just the filename
+                question.files[i] = filename;
+                console.log(`Converted assets/img path to filename in question files: ${file} -> ${filename}`);
+              }
             } else {
               const filename = file.split('/').pop();
               if (filename) uniqueImages.add(filename);
@@ -350,6 +360,16 @@ class DataService {
                 // Replace the URL with just the filename
                 question.alternatives[index].file = filename;
                 console.log(`Converted enem.dev URL to filename in alternative: ${alt.file} -> ${filename}`);
+              }
+            } else if (alt.file.includes('assets/img/')) {
+              // Extract just the filename from the assets/img path
+              const urlParts = alt.file.split('/');
+              const filename = urlParts[urlParts.length - 1];
+              if (filename) {
+                uniqueImages.add(filename);
+                // Replace the URL with just the filename
+                question.alternatives[index].file = filename;
+                console.log(`Converted assets/img path to filename in alternative: ${alt.file} -> ${filename}`);
               }
             } else {
               const filename = alt.file.split('/').pop();

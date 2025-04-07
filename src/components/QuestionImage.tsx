@@ -40,6 +40,11 @@ const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
         const urlParts = source.split('/');
         filename = urlParts[urlParts.length - 1];
         console.log(`Converted enem.dev URL to filename: ${filename}`);
+      } else if (source.includes('assets/img/')) {
+        // Extract just the filename from the assets/img path
+        const urlParts = source.split('/');
+        filename = urlParts[urlParts.length - 1];
+        console.log(`Converted assets/img path to filename: ${filename}`);
       } else {
         filename = source.split('/').pop() || '';
       }
