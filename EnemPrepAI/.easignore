@@ -1,0 +1,16 @@
+# Exclude node modules (will be reinstalled during build)
+node_modules/
+
+# Exclude git directory
+.git/
+
+# Exclude any large files that aren't needed for the build
+.venv/
+__pycache__/
+
+# Exclude any large assets that aren't needed for the build
+ios-assets/assets/assets/img/
+
+# Exclude any temporary files
+.expo/
+.expo-shared/
