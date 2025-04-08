@@ -1,8 +1,8 @@
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+import ApiService from './ApiService';
 
-// We'll load the data from local assets instead of downloading it
-// Create a mock data structure to use when the JSON file is not available
+// Create a mock data structure to use when the API is not available
 const mockEnemData = {
   "exams": [
     {
@@ -67,15 +67,6 @@ const mockEnemData = {
     }
   ]
 };
-
-// Try to import the JSON file, but use mock data if it fails
-let enemData: any;
-try {
-  enemData = require('../../assets/enem_data.json');
-} catch (e) {
-  console.warn('Failed to load JSON file, using mock data');
-  enemData = mockEnemData;
-}
 
 export interface Exam {
   title: string;
@@ -149,7 +140,7 @@ class DataService {
   }
 
   /**
-   * Load the ENEM data from local assets
+   * Load the ENEM data from the API
    */
   async loadLocalData() {
     try {
@@ -158,96 +149,56 @@ class DataService {
       console.log(statusMsg);
       this.updateLoadingStatus(statusMsg);
 
-      // Try multiple approaches to load the data
-      let dataLoaded = false;
+      // Initialize data structure
+      this.data = { exams: [], questions: [] };
 
-      // Approach 1: Try to load data from the imported JSON file (works in development)
-      if (!dataLoaded) {
-        try {
-          console.log('Tentando carregar dados do arquivo importado...');
-          this.data = JSON.parse(JSON.stringify(enemData));
-          if (this.data && this.data.exams) {
-            console.log('Dados carregados com sucesso do arquivo importado!');
-            dataLoaded = true;
-          }
-        } catch (importError) {
-          console.warn('Erro ao carregar do arquivo importado:', importError);
-        }
-      }
+      // Try to load data from the API
+      try {
+        console.log('Tentando carregar dados da API interna...');
 
-      // Approach 2: Try to load from document directory
-      if (!dataLoaded) {
-        try {
-          console.log('Tentando carregar dados do diretório de documentos...');
-          const fileUri = FileSystem.documentDirectory + 'enem_data_markdown.json';
-          const fileExists = await FileSystem.getInfoAsync(fileUri);
+        // Get all exams from the API
+        const exams = await ApiService.getExams();
+        this.data.exams = exams;
 
-          if (fileExists.exists) {
-            const fileContent = await FileSystem.readAsStringAsync(fileUri);
-            this.data = JSON.parse(fileContent);
-            if (this.data && this.data.exams) {
-              console.log('Dados carregados com sucesso do diretório de documentos!');
-              dataLoaded = true;
+        // Load questions for each exam
+        this.data.questions = [];
+
+        // For each exam, load a batch of questions
+        for (const exam of exams) {
+          this.updateLoadingStatus(`Carregando questões do ENEM ${exam.year}...`);
+
+          try {
+            // Get questions for this exam (limit to 50 for performance)
+            const questionsResponse = await ApiService.getQuestions(exam.year, { limit: 50, offset: 0 });
+
+            // Process each question to handle images
+            for (const question of questionsResponse.questions) {
+              // Process images in the question
+              const processedQuestion = await ApiService.processQuestionContent(question);
+
+              // Add the processed question to our data
+              this.data.questions.push(processedQuestion);
             }
+
+            console.log(`Carregadas ${questionsResponse.questions.length} questões do ENEM ${exam.year}`);
+          } catch (examError) {
+            console.warn(`Erro ao carregar questões do ENEM ${exam.year}:`, examError);
           }
-        } catch (docError) {
-          console.warn('Erro ao carregar do diretório de documentos:', docError);
         }
-      }
 
-      // Approach 3: Try to load from bundle directory
-      if (!dataLoaded) {
-        try {
-          console.log('Tentando carregar dados do diretório do bundle...');
-          const assetUri = FileSystem.bundleDirectory + 'assets/enem_data_markdown.json';
-          const assetExists = await FileSystem.getInfoAsync(assetUri);
+        console.log('Dados carregados com sucesso da API!');
+      } catch (apiError) {
+        console.warn('Erro ao carregar da API:', apiError);
 
-          if (assetExists.exists) {
-            // Copy to document directory for future use
-            const fileUri = FileSystem.documentDirectory + 'enem_data_markdown.json';
-            await FileSystem.copyAsync({
-              from: assetUri,
-              to: fileUri
-            });
-            const fileContent = await FileSystem.readAsStringAsync(fileUri);
-            this.data = JSON.parse(fileContent);
-            if (this.data && this.data.exams) {
-              console.log('Dados carregados com sucesso do diretório do bundle!');
-              dataLoaded = true;
-            }
-          }
-        } catch (bundleError) {
-          console.warn('Erro ao carregar do diretório do bundle:', bundleError);
-        }
-      }
-
-      // Final fallback to hardcoded data
-      if (!dataLoaded) {
-        console.log('Usando dados hardcoded como último recurso...');
-        try {
-          this.data = JSON.parse(JSON.stringify(enemData));
-
-          // Ensure the data has the expected structure
-          if (!this.data) this.data = {};
-          if (!this.data.exams) this.data.exams = [];
-          if (!this.data.questions) this.data.questions = [];
-
-          console.log('Dados hardcoded carregados com sucesso!');
-          dataLoaded = true;
-        } catch (e) {
-          console.error('Erro ao carregar dados hardcoded:', e);
-          // Initialize with empty data as a last resort
-          this.data = { exams: [], questions: [] };
-        }
+        // Fallback to mock data if API fails
+        console.log('Usando dados mockados como último recurso...');
+        this.data = JSON.parse(JSON.stringify(mockEnemData));
       }
 
       // Ensure we have at least an empty data structure
       if (!this.data) this.data = {};
       if (!this.data.exams) this.data.exams = [];
       if (!this.data.questions) this.data.questions = [];
-
-      // Update image paths to use local assets
-      this.updateImagePaths();
 
       // Setup the images directory
       await this.copyImagesToDocumentDirectory();

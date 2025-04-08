@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "fix-gradle": "node ./patches/fix-gradle-files.js"
+    "fix-gradle": "node ./patches/fix-gradle-files.js",
+    "copy-api": "node ./copy_api_to_assets.js",
+    "prebuild": "npm run copy-api"
   },
   "jest": {
     "preset": "jest-expo"
