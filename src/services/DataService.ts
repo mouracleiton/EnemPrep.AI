@@ -1,3 +1,6 @@
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
+
 // We'll load the data from local assets instead of downloading it
 // Create a mock data structure to use when the JSON file is not available
 const mockEnemData = {
@@ -66,15 +69,13 @@ const mockEnemData = {
 };
 
 // Try to import the JSON file, but use mock data if it fails
-let enemData;
+let enemData: any;
 try {
   enemData = require('../../assets/enem_data.json');
 } catch (e) {
   console.warn('Failed to load JSON file, using mock data');
   enemData = mockEnemData;
 }
-import imageUtils from '../utils/imageUtils';
-import * as FileSystem from 'expo-file-system';
 
 export interface Exam {
   title: string;
@@ -178,7 +179,7 @@ class DataService {
       if (!dataLoaded) {
         try {
           console.log('Tentando carregar dados do diretório de documentos...');
-          const fileUri = FileSystem.documentDirectory + 'enem_data.json';
+          const fileUri = FileSystem.documentDirectory + 'enem_data_markdown.json';
           const fileExists = await FileSystem.getInfoAsync(fileUri);
 
           if (fileExists.exists) {
@@ -198,12 +199,12 @@ class DataService {
       if (!dataLoaded) {
         try {
           console.log('Tentando carregar dados do diretório do bundle...');
-          const assetUri = FileSystem.bundleDirectory + 'assets/enem_data.json';
+          const assetUri = FileSystem.bundleDirectory + 'assets/enem_data_markdown.json';
           const assetExists = await FileSystem.getInfoAsync(assetUri);
 
           if (assetExists.exists) {
             // Copy to document directory for future use
-            const fileUri = FileSystem.documentDirectory + 'enem_data.json';
+            const fileUri = FileSystem.documentDirectory + 'enem_data_markdown.json';
             await FileSystem.copyAsync({
               from: assetUri,
               to: fileUri
@@ -248,6 +249,9 @@ class DataService {
       // Update image paths to use local assets
       this.updateImagePaths();
 
+      // Setup the images directory
+      await this.copyImagesToDocumentDirectory();
+
       // Notify all callbacks that data is loaded
       this.onDataLoadedCallbacks.forEach(callback => callback());
       this.onDataLoadedCallbacks = [];
@@ -255,8 +259,8 @@ class DataService {
       const successMsg = 'Dados do ENEM carregados com sucesso!';
       console.log(successMsg);
       this.updateLoadingStatus(successMsg);
-    } catch (error) {
-      const errorMsg = `Erro ao carregar dados do ENEM: ${error.message}`;
+    } catch (error: any) {
+      const errorMsg = `Erro ao carregar dados do ENEM: ${error.message || error}`;
       console.error(errorMsg);
       this.updateLoadingStatus(errorMsg);
     } finally {
@@ -265,123 +269,96 @@ class DataService {
   }
 
   /**
+   * Copy images from assets to document directory for easier access
+   */
+  private async copyImagesToDocumentDirectory() {
+    try {
+      // Create the assets/img directory in the document directory if it doesn't exist
+      const imgDir = `${FileSystem.documentDirectory}assets/img`;
+      const dirInfo = await FileSystem.getInfoAsync(imgDir);
+
+      if (!dirInfo.exists) {
+        console.log(`Creating directory: ${imgDir}`);
+        await FileSystem.makeDirectoryAsync(imgDir, { intermediates: true });
+      }
+
+      console.log('Images directory ready:', imgDir);
+
+      // We don't need to copy individual files as they'll be accessed from the bundle
+      // But we can create a placeholder to ensure the directory exists
+      const placeholderPath = `${imgDir}/placeholder.txt`;
+      await FileSystem.writeAsStringAsync(placeholderPath, 'This directory contains images for the app.');
+
+      console.log('Images directory setup complete');
+      return true;
+    } catch (error: any) {
+      console.error('Error copying images to document directory:', error.message);
+      return false;
+    }
+  }
+
+  /**
    * Update image paths to use local assets
    */
   private updateImagePaths() {
-    if (!this.data) {
-      this.data = {};
-    }
-
-    // Initialize questions array if it doesn't exist
-    if (!this.data.questions) {
-      console.warn('Questions array is undefined, initializing empty array');
-      this.data.questions = [];
+    if (!this.data || !this.data.questions) {
+      console.warn('No data or questions to update image paths');
       return;
     }
 
-    // If questions is not an array, convert it to an array
-    if (!Array.isArray(this.data.questions)) {
-      // Log the type and structure of questions for debugging
-      console.log('Questions type:', typeof this.data.questions);
-      if (typeof this.data.questions === 'object') {
-        console.log('Questions keys:', Object.keys(this.data.questions));
+    // Função para processar uma questão individual
+    const processQuestion = (question: Question) => {
+      // Processa arquivos da questão
+      if (question.files) {
+        question.files = question.files.map((file: string) => {
+          if (!file) return file;
+          // Extrai apenas o nome do arquivo
+          return file.split('/').pop() || file;
+        });
       }
 
-      // Try to convert to array if it's an object
-      if (typeof this.data.questions === 'object') {
-        try {
-          this.data.questions = Object.values(this.data.questions).flat();
-        } catch (e) {
-          console.error('Error flattening questions object:', e);
-          this.data.questions = [];
-        }
-      } else {
-        // If it's not an object, initialize as empty array
-        this.data.questions = [];
-      }
-    }
-
-    // Log some statistics about images
-    let totalImages = 0;
-    let uniqueImages = new Set();
-
-    // Update image paths in questions
-    this.data.questions.forEach((question: Question) => {
-      // Process and count images in question files
-      if (question.files && question.files.length > 0) {
-        totalImages += question.files.length;
-
-        // Process each file path
-        for (let i = 0; i < question.files.length; i++) {
-          const file = question.files[i];
-          if (file) {
-            // Check if the file is a URL from enem.dev
-            if (file.includes('enem.dev')) {
-              // Extract just the filename from the URL
-              const urlParts = file.split('/');
-              const filename = urlParts[urlParts.length - 1];
-              if (filename) {
-                uniqueImages.add(filename);
-                // Replace the URL with just the filename
-                question.files[i] = filename;
-                console.log(`Converted enem.dev URL to filename in question files: ${file} -> ${filename}`);
-              }
-            } else if (file.includes('assets/img/')) {
-              // Extract just the filename from the assets/img path
-              const urlParts = file.split('/');
-              const filename = urlParts[urlParts.length - 1];
-              if (filename) {
-                uniqueImages.add(filename);
-                // Replace the URL with just the filename
-                question.files[i] = filename;
-                console.log(`Converted assets/img path to filename in question files: ${file} -> ${filename}`);
-              }
-            } else {
-              const filename = file.split('/').pop();
-              if (filename) uniqueImages.add(filename);
-            }
-          }
-        }
-      }
-
-      // Process and count images in alternatives
-      if (question.alternatives && question.alternatives.length > 0) {
-        question.alternatives.forEach((alt, index) => {
+      // Processa imagens nas alternativas
+      if (question.alternatives) {
+        question.alternatives.forEach(alt => {
           if (alt.file) {
-            totalImages++;
-
-            // Check if the file is a URL from enem.dev
-            if (alt.file.includes('enem.dev')) {
-              // Extract just the filename from the URL
-              const urlParts = alt.file.split('/');
-              const filename = urlParts[urlParts.length - 1];
-              if (filename) {
-                uniqueImages.add(filename);
-                // Replace the URL with just the filename
-                question.alternatives[index].file = filename;
-                console.log(`Converted enem.dev URL to filename in alternative: ${alt.file} -> ${filename}`);
-              }
-            } else if (alt.file.includes('assets/img/')) {
-              // Extract just the filename from the assets/img path
-              const urlParts = alt.file.split('/');
-              const filename = urlParts[urlParts.length - 1];
-              if (filename) {
-                uniqueImages.add(filename);
-                // Replace the URL with just the filename
-                question.alternatives[index].file = filename;
-                console.log(`Converted assets/img path to filename in alternative: ${alt.file} -> ${filename}`);
-              }
-            } else {
-              const filename = alt.file.split('/').pop();
-              if (filename) uniqueImages.add(filename);
-            }
+            // Extrai apenas o nome do arquivo
+            alt.file = alt.file.split('/').pop() || alt.file;
           }
         });
       }
-    });
 
-    console.log(`Total images in questions: ${totalImages}`);
-    console.log(`Unique images: ${uniqueImages.size}`);
+      // Processa imagens no contexto (markdown)
+      if (question.context) {
+        // Substitui URLs completas por apenas o nome do arquivo
+        question.context = question.context.replace(
+          /!\[\]\((https:\/\/enem\.dev\/.*?\/|assets\/img\/)([^\/]+)\)/g,
+          '![]($2)'
+        );
+
+        // Garante que todas as imagens estejam no formato Markdown correto
+        question.context = question.context.replace(
+          /<img\s+src="([^"]+)"\s*\/>/g,
+          '![]($1)'
+        );
+      }
+    };
+
+    // Verifica se questions é um objeto com anos como chaves
+    if (typeof this.data.questions === 'object' && !Array.isArray(this.data.questions)) {
+      // Itera sobre cada ano
+      Object.keys(this.data.questions).forEach(year => {
+        // Verifica se o valor para este ano é um array
+        if (Array.isArray(this.data.questions[year])) {
+          // Processa cada questão deste ano
+          this.data.questions[year].forEach(processQuestion);
+        }
+      });
+    } else if (Array.isArray(this.data.questions)) {
+      // Se questions já for um array, processa diretamente
+      this.data.questions.forEach(processQuestion);
+    }
+
+    console.log('Image paths updated successfully');
   }
 
   /**

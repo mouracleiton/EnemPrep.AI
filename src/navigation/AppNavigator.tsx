@@ -14,6 +14,7 @@ import EssayInputScreen from '../screens/EssayInputScreen';
 import EssayResultScreen from '../screens/EssayResultScreen';
 import ExamsListScreen from '../screens/ExamsListScreen';
 import ExamDetailScreen from '../screens/ExamDetailScreen';
+import ImageTestScreen from '../screens/ImageTestScreen';
 
 // Define the types for our navigation
 export type RootStackParamList = {
@@ -30,6 +31,7 @@ export type RootStackParamList = {
   EssayResult: { evaluationId: string };
   ExamsList: undefined;
   ExamDetail: { examYear: number; examType: string };
+  ImageTest: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -105,6 +107,11 @@ const AppNavigator = () => {
           options={({ route }) => ({
             title: `ENEM ${route.params.examYear} - ${route.params.examType}`
           })}
+        />
+        <Stack.Screen
+          name="ImageTest"
+          component={ImageTestScreen}
+          options={{ title: 'Teste de Imagens' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

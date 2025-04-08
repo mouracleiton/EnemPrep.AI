@@ -5,6 +5,8 @@ import DataService from './src/services/DataService';
 import AppNavigator from './src/navigation/AppNavigator';
 import * as SplashScreen from 'expo-splash-screen';
 import * as FileSystem from 'expo-file-system';
+import { DownloadProgress } from './src/components/DownloadProgress';
+import { AssetDownloadService } from './src/services/AssetDownloadService';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -17,6 +19,8 @@ export default function App() {
   const [examsCount, setExamsCount] = useState(0);
   const [questionsCount, setQuestionsCount] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadStatus, setDownloadStatus] = useState('');
 
   // Function to ensure the assets directory exists
   const ensureAssetsDirectory = async () => {
@@ -36,6 +40,43 @@ export default function App() {
   };
 
   useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        const downloadService = AssetDownloadService.getInstance();
+        
+        // Verificar se precisa atualizar
+        const needsUpdate = await downloadService.checkForUpdates();
+        
+        if (needsUpdate) {
+          setDownloadStatus('Preparando download dos recursos...');
+          
+          const unsubscribe = downloadService.onProgress(progress => {
+            setDownloadProgress(progress);
+            if (progress < 60) {
+              setDownloadStatus('Baixando arquivos...');
+            } else if (progress < 95) {
+              setDownloadStatus('Descompactando arquivos...');
+            } else {
+              setDownloadStatus('Finalizando...');
+            }
+          });
+
+          await downloadService.downloadAllAssets();
+          unsubscribe();
+        }
+
+        // Continuar inicialização normal do app
+        await initializeServices();
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        setDownloadStatus('Erro ao baixar recursos. Tente novamente.');
+      }
+    };
+
+    initializeApp();
+  }, []);
+
+  const initializeServices = async () => {
     // Ensure assets directory exists
     ensureAssetsDirectory();
 
@@ -54,29 +95,37 @@ export default function App() {
       // Hide the splash screen once everything is loaded
       SplashScreen.hideAsync().catch(e => console.warn('Error hiding splash screen:', e));
     });
-  }, []);
+  };
 
-  // If data is still loading, show a loading screen
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <StatusBar style="auto" />
-        <Text style={styles.title}>ENEM Prep App</Text>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text style={styles.loadingText}>{loadingStatus}</Text>
-          {examsCount > 0 && (
-            <Text style={styles.statsText}>
-              {examsCount} exames, {questionsCount} questões carregadas
-            </Text>
-          )}
-        </View>
-      </View>
-    );
-  }
-
-  // Once data is loaded, show the app navigator
-  return <AppNavigator />;
+  return (
+    <>
+      {downloadProgress > 0 && downloadProgress < 100 ? (
+        <DownloadProgress 
+          progress={downloadProgress}
+          status={downloadStatus}
+        />
+      ) : (
+        // Seu app normal aqui
+        isLoading ? (
+          <View style={styles.container}>
+            <StatusBar style="auto" />
+            <Text style={styles.title}>ENEM Prep App</Text>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0000ff" />
+              <Text style={styles.loadingText}>{loadingStatus}</Text>
+              {examsCount > 0 && (
+                <Text style={styles.statsText}>
+                  {examsCount} exames, {questionsCount} questões carregadas
+                </Text>
+              )}
+            </View>
+          </View>
+        ) : (
+          <AppNavigator />
+        )
+      )}
+    </>
+  );
 }
 
 const styles = StyleSheet.create({

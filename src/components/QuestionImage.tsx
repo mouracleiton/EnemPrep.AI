@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, Platform } from 'react-native';
-import { getQuestionImage } from '../utils/QuestionImageMapping';
+import { View, Text, StyleSheet, Dimensions, Platform, Image } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import imageMapping from '../utils/QuestionImageMapping';
+import SafeImage from './SafeImage';
+import ImagePathMapper from '../utils/ImagePathMapper';
+import { getImagePath } from '../utils/imagePathUtils';
 
 interface QuestionImageProps {
   source: string | null;
@@ -13,6 +14,9 @@ const { width } = Dimensions.get('window');
 
 // Use our new question icon as a placeholder
 const placeholderImage = require('../../assets/images/question-icon.png');
+
+// Cache directory
+const CACHE_DIRECTORY = `${FileSystem.cacheDirectory}question-image-cache/`;
 
 const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
   const [imageUri, setImageUri] = useState<any>(null);
@@ -31,7 +35,7 @@ const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
     }
 
     try {
-      // Get the filename from the source, handling URLs from enem.dev
+      // Get the filename from the source, handling different formats
       let filename = '';
 
       // Check if the source is a URL from enem.dev
@@ -45,73 +49,42 @@ const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
         const urlParts = source.split('/');
         filename = urlParts[urlParts.length - 1];
         console.log(`Converted assets/img path to filename: ${filename}`);
+      } else if (source.startsWith('local:')) {
+        // Handle local: prefix (from previous implementation)
+        filename = source.replace('local:', '');
+        console.log(`Extracted filename from local: ${filename}`);
       } else {
+        // Handle direct filenames or other formats
         filename = source.split('/').pop() || '';
+        console.log(`Using filename directly: ${filename}`);
       }
 
-      // First try to use the mapping (works for all platforms)
-      const mappedImage = getQuestionImage(filename);
-      if (mappedImage) {
-        setImageUri(mappedImage);
-        setLoading(false);
-        return;
-      }
+      // NOVA ABORDAGEM: Usar caminhos diretos para as imagens
+      let imagePath;
 
-      // If mapping failed, try direct require for common images
-      try {
-        // Try to find the image in the mapping by filename
-        const keys = Object.keys(imageMapping);
-        const matchingKey = keys.find(key => key.toLowerCase() === filename.toLowerCase());
-
-        if (matchingKey) {
-          setImageUri(imageMapping[matchingKey]);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {
-        console.log('Error finding image in mapping:', e);
-      }
-
-      // For mobile platforms, try to load from assets directory
-      if (Platform.OS === 'ios' || Platform.OS === 'android') {
-        try {
-          // Try to load from the bundle directory
-          const assetUri = `${FileSystem.bundleDirectory}assets/img/${filename}`;
-          const assetInfo = await FileSystem.getInfoAsync(assetUri);
-
-          if (assetInfo.exists) {
-            setImageUri({ uri: assetUri });
-            setLoading(false);
-            return;
-          }
-
-          // Try alternative path
-          const altAssetUri = `${FileSystem.documentDirectory}assets/img/${filename}`;
-          const altAssetInfo = await FileSystem.getInfoAsync(altAssetUri);
-
-          if (altAssetInfo.exists) {
-            setImageUri({ uri: altAssetUri });
-            setLoading(false);
-            return;
-          }
-
-          // Fallback to placeholder
-          console.warn(`Image not found: ${filename}`);
-          setImageUri(placeholderImage);
-        } catch (e) {
-          console.error('Error loading image from filesystem:', e);
-          setImageUri(placeholderImage);
-          setError(true);
-        }
+      if (Platform.OS === 'android') {
+        // No Android, vamos tentar com o protocolo file:///android_asset/
+        imagePath = `file:///android_asset/assets/img/${filename}`;
+        console.log(`Android - Usando caminho: ${imagePath}`);
+      } else if (Platform.OS === 'ios') {
+        // No iOS, vamos usar o FileSystem.bundleDirectory
+        imagePath = `${FileSystem.bundleDirectory}assets/img/${filename}`;
+        console.log(`iOS - Usando caminho: ${imagePath}`);
       } else {
-        // Fallback for web
-        setImageUri({ uri: `asset:/img/${filename}` });
+        // Para web, usamos o caminho relativo
+        imagePath = `assets/img/${filename}`;
+        console.log(`Web - Usando caminho: ${imagePath}`);
       }
-    } catch (e) {
-      console.error('Error in loadImage:', e);
-      setError(true);
-    } finally {
+
+      // Configurar imagem
+      setImageUri({ uri: imagePath });
       setLoading(false);
+      return;
+    } catch (e) {
+      console.error(`Erro ao carregar imagem: ${e}`);
+      setError(true);
+      setLoading(false);
+      setImageUri(placeholderImage);
     }
   };
 
@@ -121,6 +94,11 @@ const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
 
   // Get the filename from the source for display
   const filename = source.split('/').pop() || '';
+
+  // Try to use SafeImage component for direct rendering
+  if (filename && !filename.includes('/')) {
+    return <SafeImage filename={filename} style={style} />;
+  }
 
   // If there's an error or we're still loading without an image
   if (error || (loading && !imageUri)) {
@@ -148,6 +126,8 @@ const QuestionImage: React.FC<QuestionImageProps> = ({ source, style }) => {
             console.error(`Failed to load image: ${source}`);
             setError(true);
           }}
+          defaultSource={placeholderImage}
+          fadeDuration={300}
         />
       )}
     </View>

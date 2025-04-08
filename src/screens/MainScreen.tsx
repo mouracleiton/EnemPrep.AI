@@ -135,6 +135,22 @@ const MainScreen = () => {
           <Ionicons name="chevron-forward" size={24} color="#fff" />
         </View>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.examsButton, { backgroundColor: '#3498db' }]}
+        onPress={() => navigation.navigate('ImageTest')}
+      >
+        <View style={styles.examsButtonContent}>
+          <Ionicons name="images" size={24} color="#fff" style={styles.examsIcon} />
+          <View style={styles.examsTextContainer}>
+            <Text style={styles.examsButtonText}>Teste de Imagens</Text>
+            <Text style={styles.examsButtonSubtext}>
+              Verificar acesso às imagens locais
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#fff" />
+        </View>
+      </TouchableOpacity>
       </ScrollView>
 
       <View style={styles.bottomContainer}>
