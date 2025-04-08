@@ -18,7 +18,10 @@
       "assets/favicon.png",
       "assets/enem_data.json",
       "assets/enem_data_reduced.json",
-      "assets/img/*.png"
+      "assets/enem_data_with_lessons.json",
+      "assets/img/*.png",
+      "assets/img/*.jpg",
+      "assets/img/*.svg"
     ],
     "android": {
       "versionCode": 3,
@@ -44,7 +47,6 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-asset",
       "expo-font"
     ]
   }
