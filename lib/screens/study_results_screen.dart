@@ -71,9 +71,9 @@ class StudyResultsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withAlpha(25), // 0.1 * 255 = 25
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(76)), // 0.3 * 255 = 76
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,31 +269,139 @@ class StudyResultsScreen extends StatelessWidget {
   }
 
   Widget _buildDisciplineBreakdown(StudySession session, DataService dataService) {
-    // This would require additional data tracking to implement properly
-    // For now, we'll just show a placeholder
+    // Obter todas as respostas desta sessão de estudo
+    final sessionAnswers = dataService.userAnswers
+        .where((answer) => answer.studySession == session.id)
+        .toList();
+
+    // Agrupar respostas por disciplina
+    final Map<String, List<UserAnswer>> answersByDiscipline = {};
+
+    for (final answer in sessionAnswers) {
+      try {
+        final question = dataService.getQuestionById(answer.questionId);
+        if (question != null) {
+          final discipline = question.discipline;
+          if (!answersByDiscipline.containsKey(discipline)) {
+            answersByDiscipline[discipline] = [];
+          }
+          answersByDiscipline[discipline]!.add(answer);
+        }
+      } catch (e) {
+        // Ignorar questões que não podem ser encontradas
+      }
+    }
+
+    // Se não houver dados para mostrar, exibir uma mensagem
+    if (answersByDiscipline.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: AppTheme.cardDecoration,
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Detalhamento por Disciplina',
+              style: AppTheme.subheadingStyle,
+            ),
+            SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Nenhuma questão respondida nesta sessão.',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: AppTheme.textLightColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Criar widgets para cada disciplina
+    final disciplineWidgets = <Widget>[];
+    final disciplineLabels = {
+      'ciencias-humanas': 'Ciências Humanas',
+      'ciencias-natureza': 'Ciências da Natureza',
+      'linguagens': 'Linguagens',
+      'matematica': 'Matemática',
+    };
+
+    answersByDiscipline.forEach((discipline, answers) {
+      final correctCount = answers.where((a) => a.isCorrect).length;
+      final totalCount = answers.length;
+      final accuracy = totalCount > 0 ? (correctCount / totalCount * 100) : 0;
+
+      disciplineWidgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                disciplineLabels[discipline] ?? discipline,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: accuracy / 100,
+                        backgroundColor: Colors.grey[200],
+                        color: accuracy >= 70
+                            ? AppTheme.secondaryColor
+                            : (accuracy >= 40 ? AppTheme.accentColor : AppTheme.errorColor),
+                        minHeight: 10,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    '${accuracy.toStringAsFixed(0)}%',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$correctCount de $totalCount questões corretas',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.textLightColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration,
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Detalhamento por Disciplina',
             style: AppTheme.subheadingStyle,
           ),
-          SizedBox(height: 16),
-          Center(
-            child: Text(
-              'Detalhamento por disciplina não disponível nesta versão.',
-              style: TextStyle(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-                color: AppTheme.textLightColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          const SizedBox(height: 16),
+          ...disciplineWidgets,
         ],
       ),
     );

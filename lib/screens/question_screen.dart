@@ -103,6 +103,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
     if (_question == null) return;
 
     final dataService = Provider.of<DataService>(context, listen: false);
+    _logger.i('Navegando para a próxima questão');
+    _logger.i('ID da questão atual: ${widget.questionId}');
+    _logger.i('ID da sessão de estudo: ${widget.studySessionId}');
 
     // If we're in a study session, check if there are more questions
     if (widget.studySessionId != null) {
@@ -110,6 +113,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
         final session = dataService.getStudySessionById(widget.studySessionId!);
 
         if (session != null && session.questionsAnswered < session.questionCount) {
+          _logger.i('Sessão de estudo em andamento: ${session.questionsAnswered}/${session.questionCount} questões respondidas');
+
           // Get more questions from the same disciplines
           final questions = dataService.getRandomQuestionsForStudy(
             session.disciplines,
@@ -117,14 +122,24 @@ class _QuestionScreenState extends State<QuestionScreen> {
             true, // Exclude already answered questions
           );
 
+          _logger.i('Encontradas ${questions.length} questões para continuar a sessão');
+
           if (questions.isNotEmpty) {
             final nextQuestion = questions.first;
+            _logger.i('Próxima questão: ${nextQuestion.id}');
+
             final studySessionParam = widget.studySessionId != null
                 ? '?studySessionId=${widget.studySessionId!}'
                 : '';
+            _logger.i('Navegando para: /question/${nextQuestion.id}$studySessionParam');
+
             context.go('/question/${nextQuestion.id}$studySessionParam');
             return;
+          } else {
+            _logger.w('Não há mais questões disponíveis para esta sessão');
           }
+        } else {
+          _logger.i('Sessão de estudo concluída: ${session?.questionsAnswered}/${session?.questionCount} questões respondidas');
         }
 
         // If we've reached the end of the study session or no more questions,
@@ -307,7 +322,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
           border: Border.all(color: borderColor, width: borderColor != Colors.transparent ? 1 : 0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: const Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -373,13 +388,13 @@ class _QuestionScreenState extends State<QuestionScreen> {
   Widget _buildActionBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Color.fromRGBO(0, 0, 0, 0.1),
             blurRadius: 4,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),

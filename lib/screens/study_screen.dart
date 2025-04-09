@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:logger/logger.dart';
 
 import '../services/data_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/logger_config.dart';
 
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key});
@@ -16,6 +18,7 @@ class _StudyScreenState extends State<StudyScreen> {
   final List<String> _selectedDisciplines = [];
   int _questionCount = 10;
   bool _excludeAnswered = false;
+  final Logger _logger = LoggerConfig.getLogger();
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +58,11 @@ class _StudyScreenState extends State<StudyScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withAlpha(25), // 0.1 * 255 = 25
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+        border: Border.all(
+          color: AppTheme.primaryColor.withAlpha(76), // 0.3 * 255 = 76
+        ),
       ),
       child: const Column(
         children: [
@@ -218,13 +223,13 @@ class _StudyScreenState extends State<StudyScreen> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Color.fromRGBO(0, 0, 0, 0.1),
             blurRadius: 4,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -285,8 +290,14 @@ class _StudyScreenState extends State<StudyScreen> {
       return;
     }
 
+    // Log para debug
+    _logger.i('Iniciando sessão de estudo: ${session.id}');
+    _logger.i('Primeira questão: ${questions.first.id}');
+
     // Navigate to the first question
     final firstQuestion = questions.first;
+
+    // Usar pushNamed em vez de go para garantir que a navegação funcione corretamente
     context.go('/question/${firstQuestion.id}?studySessionId=${session.id}');
   }
 }

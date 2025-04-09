@@ -71,30 +71,224 @@ class DataService extends ChangeNotifier {
     ],
     "questions": [
       {
-        "title": "Questão 1",
+        "title": "Questão 1 - Ciências Humanas",
         "index": 1,
         "discipline": "ciencias-humanas",
         "language": null,
         "year": 2023,
-        "context": "Considere a seguinte situação-problema...",
+        "context": "Considere a seguinte situação-problema relacionada à história do Brasil: A Lei de Terras de 1850 estabeleceu que a aquisição de terras públicas só poderia ocorrer mediante compra, e não mais por meio de posse ou doação. Essa lei foi promulgada no mesmo ano da Lei Eusébio de Queiroz, que proibiu o tráfico de escravos para o Brasil.",
         "files": [],
         "correctAlternative": "A",
-        "alternativesIntroduction": "Assinale a alternativa correta:",
+        "alternativesIntroduction": "Assinale a alternativa que explica corretamente a relação entre essas duas leis:",
         "alternatives": [
           {
             "letter": "A",
-            "text": "Alternativa correta",
+            "text": "A Lei de Terras dificultava o acesso à propriedade por parte dos escravos libertos, garantindo a disponibilidade de mão de obra para as grandes propriedades.",
             "file": null,
             "isCorrect": true
           },
           {
             "letter": "B",
-            "text": "Alternativa incorreta 1",
+            "text": "A Lei de Terras facilitava a aquisição de terras pelos escravos libertos, como forma de compensação pelo fim do tráfico negreiro.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "C",
+            "text": "As duas leis não possuem relação entre si, sendo apenas coincidência terem sido promulgadas no mesmo ano.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "D",
+            "text": "A Lei de Terras foi criada para incentivar a imigração europeia, sem qualquer relação com a questão da escravidão.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "E",
+            "text": "A Lei de Terras estabelecia cotas de terras a serem distribuídas gratuitamente aos escravos libertos.",
             "file": null,
             "isCorrect": false
           }
         ],
-        "lesson": "Lição sobre o tema da questão 1"
+        "lesson": "A Lei de Terras de 1850 e a Lei Eusébio de Queiroz estão intimamente relacionadas ao processo de transição do trabalho escravo para o trabalho livre no Brasil. Ao estabelecer a compra como única forma de aquisição de terras, a Lei de Terras criava uma barreira para que os escravos libertos e imigrantes pobres pudessem se tornar proprietários, garantindo assim a disponibilidade de mão de obra para as grandes fazendas. Essa medida foi uma estratégia das elites agrárias para manter o controle sobre a terra e o trabalho em um contexto de crise do sistema escravista."
+      },
+      {
+        "title": "Questão 2 - Ciências da Natureza",
+        "index": 2,
+        "discipline": "ciencias-natureza",
+        "language": null,
+        "year": 2023,
+        "context": "Em um experimento de laboratório, um estudante observou que, ao adicionar uma solução de hidróxido de sódio (NaOH) a uma solução contendo íons de ferro (Fe3+), formou-se um precipitado de cor marrom-avermelhada. Esse precipitado é o hidróxido de ferro III [Fe(OH)3].",
+        "files": [],
+        "correctAlternative": "D",
+        "alternativesIntroduction": "A equação química balanceada que representa corretamente essa reação é:",
+        "alternatives": [
+          {
+            "letter": "A",
+            "text": "Fe3+ + OH- → Fe(OH)3",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "B",
+            "text": "Fe3+ + 3OH- → Fe(OH)3",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "C",
+            "text": "Fe3+ + NaOH → Fe(OH)3 + Na3+",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "D",
+            "text": "Fe3+ + 3NaOH → Fe(OH)3 + 3Na+",
+            "file": null,
+            "isCorrect": true
+          },
+          {
+            "letter": "E",
+            "text": "3Fe + NaOH → Fe(OH)3 + 3Na",
+            "file": null,
+            "isCorrect": false
+          }
+        ],
+        "lesson": "Nesta reação química, ocorre a formação de um precipitado de hidróxido de ferro III a partir da reação entre íons Fe3+ e hidróxido de sódio (NaOH). Para balancear corretamente a equação, é necessário considerar que cada íon Fe3+ reage com três moléculas de NaOH para formar uma molécula de Fe(OH)3 e três íons Na+. O balanceamento correto é essencial para garantir a conservação da massa e da carga elétrica na reação química."
+      },
+      {
+        "title": "Questão 3 - Linguagens",
+        "index": 3,
+        "discipline": "linguagens",
+        "language": null,
+        "year": 2023,
+        "context": "Leia o seguinte trecho do poema 'Vou-me embora pra Pasárgada', de Manuel Bandeira:\n\nVou-me embora pra Pasárgada\nLá sou amigo do rei\nLá tenho a mulher que eu quero\nNa cama que escolherei\nVou-me embora pra Pasárgada\n\nVou-me embora pra Pasárgada\nAqui eu não sou feliz\nLá a existência é uma aventura\nDe tal modo inconsequente\nQue Joana a Louca de Espanha\nRainha e falsa demente\nVem a ser contraparente\nDa nora que nunca tive",
+        "files": [],
+        "correctAlternative": "B",
+        "alternativesIntroduction": "Sobre o poema de Manuel Bandeira, é correto afirmar que:",
+        "alternatives": [
+          {
+            "letter": "A",
+            "text": "Representa uma crítica direta ao regime político da época, usando Pasárgada como metáfora para um país democrático.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "B",
+            "text": "Expressa o desejo de evasão da realidade para um lugar idealizado, onde o eu-lírico poderia realizar seus desejos e fantasias.",
+            "file": null,
+            "isCorrect": true
+          },
+          {
+            "letter": "C",
+            "text": "Descreve uma viagem real que o poeta fez à antiga cidade de Pasárgada, na Pérsia.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "D",
+            "text": "Representa uma homenagem à cultura persa e sua influência na literatura brasileira modernista.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "E",
+            "text": "É um manifesto político que defende a monarquia como forma ideal de governo, simbolizada pela amizade com o rei.",
+            "file": null,
+            "isCorrect": false
+          }
+        ],
+        "lesson": "O poema 'Vou-me embora pra Pasárgada', de Manuel Bandeira, é uma das obras mais emblemáticas do Modernismo brasileiro. Nele, o poeta cria um lugar imaginário e utópico chamado Pasárgada (inspirado na antiga capital do império persa), para onde deseja fugir da realidade opressora. Pasárgada representa um refúgio idealizado onde todos os desejos e fantasias do eu-lírico poderiam ser realizados, em contraste com sua vida real marcada por limitações e frustrações. O poema expressa o tema da evasão, muito comum na obra de Bandeira, que sofria de tuberculose e via na literatura uma forma de transcender suas limitações físicas e sociais."
+      },
+      {
+        "title": "Questão 4 - Matemática",
+        "index": 4,
+        "discipline": "matematica",
+        "language": null,
+        "year": 2023,
+        "context": "Um reservatório de água em formato de um prisma reto retangular possui dimensões internas de 4 metros de comprimento, 3 metros de largura e 2 metros de altura. O reservatório está inicialmente vazio e começa a ser preenchido por uma torneira que despeja água a uma vazão constante de 360 litros por hora.",
+        "files": [],
+        "correctAlternative": "C",
+        "alternativesIntroduction": "Quanto tempo, em horas, será necessário para encher completamente o reservatório?",
+        "alternatives": [
+          {
+            "letter": "A",
+            "text": "6 horas",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "B",
+            "text": "24 horas",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "C",
+            "text": "66,7 horas",
+            "file": null,
+            "isCorrect": true
+          },
+          {
+            "letter": "D",
+            "text": "72 horas",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "E",
+            "text": "120 horas",
+            "file": null,
+            "isCorrect": false
+          }
+        ],
+        "lesson": "Para resolver este problema, precisamos calcular o volume do reservatório e depois determinar quanto tempo será necessário para preencher esse volume com a vazão dada.\n\nVolume do reservatório = comprimento × largura × altura\nVolume = 4 m × 3 m × 2 m = 24 m³\n\nComo 1 m³ = 1.000 litros, o volume em litros é:\nVolume = 24 × 1.000 = 24.000 litros\n\nAgora, calculamos o tempo necessário:\nTempo = Volume ÷ Vazão\nTempo = 24.000 litros ÷ 360 litros/hora = 66,67 horas\n\nPortanto, serão necessárias aproximadamente 66,7 horas para encher completamente o reservatório."
+      },
+      {
+        "title": "Questão 5 - Ciências Humanas",
+        "index": 5,
+        "discipline": "ciencias-humanas",
+        "language": null,
+        "year": 2023,
+        "context": "A Revolução Industrial, iniciada na Inglaterra no século XVIII, provocou profundas transformações nas relações de trabalho e na organização social. O processo de industrialização foi marcado pela substituição do trabalho artesanal pelo assalariado e pelo uso de máquinas.",
+        "files": [],
+        "correctAlternative": "E",
+        "alternativesIntroduction": "Entre as consequências sociais da Revolução Industrial, pode-se destacar:",
+        "alternatives": [
+          {
+            "letter": "A",
+            "text": "A valorização do trabalho artesanal e das corporações de ofício medievais.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "B",
+            "text": "A redução da jornada de trabalho e a melhoria imediata das condições de vida dos trabalhadores.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "C",
+            "text": "O fortalecimento da aristocracia rural como principal classe detentora do poder econômico.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "D",
+            "text": "A diminuição da população urbana e o retorno dos trabalhadores ao campo.",
+            "file": null,
+            "isCorrect": false
+          },
+          {
+            "letter": "E",
+            "text": "O crescimento desordenado das cidades e a formação de bairros operários com condições precárias de moradia.",
+            "file": null,
+            "isCorrect": true
+          }
+        ],
+        "lesson": "A Revolução Industrial provocou um intenso êxodo rural, com grandes massas de camponeses migrando para as cidades em busca de trabalho nas fábricas. Esse processo resultou em um crescimento urbano acelerado e desordenado, sem planejamento adequado de infraestrutura. Os bairros operários que se formaram ao redor das fábricas eram caracterizados por condições precárias de moradia, com habitações superlotadas, falta de saneamento básico e altos índices de doenças. As jornadas de trabalho eram extenuantes, chegando a 14-16 horas diárias, com baixos salários e condições insalubres nas fábricas. Essas condições levaram ao surgimento dos primeiros movimentos operários organizados e às primeiras teorias socialistas que criticavam o sistema capitalista industrial."
       }
     ]
   };
@@ -414,13 +608,19 @@ class DataService extends ChangeNotifier {
 
   // Get random questions for study
   List<Question> getRandomQuestionsForStudy(List<String> disciplines, int count, [bool excludeAnswered = false]) {
+    _logger.i('Buscando $count questões para as disciplinas: $disciplines');
+    _logger.i('Total de questões disponíveis: ${_questions.length}');
+
     // Get all questions for the selected disciplines
     List<Question> availableQuestions = _questions.where((q) => disciplines.contains(q.discipline)).toList();
+    _logger.i('Questões filtradas por disciplina: ${availableQuestions.length}');
 
     // Optionally exclude already answered questions
     if (excludeAnswered) {
       final answeredIds = _userAnswers.map((a) => a.questionId).toSet();
+      _logger.i('Questões já respondidas: ${answeredIds.length}');
       availableQuestions = availableQuestions.where((q) => !answeredIds.contains(q.id)).toList();
+      _logger.i('Questões após excluir respondidas: ${availableQuestions.length}');
     }
 
     // If we don't have enough questions, just return what we have
@@ -472,9 +672,12 @@ class DataService extends ChangeNotifier {
 
     // If we have too many questions, trim the result
     if (result.length > count) {
-      return result.sublist(0, count);
+      final trimmedResult = result.sublist(0, count);
+      _logger.i('Retornando ${trimmedResult.length} questões (limitado ao máximo solicitado)');
+      return trimmedResult;
     }
 
+    _logger.i('Retornando ${result.length} questões');
     return result;
   }
 
