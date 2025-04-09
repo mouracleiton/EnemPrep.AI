@@ -45,6 +45,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
         _question = question;
       });
     } catch (e) {
+      _logger.e('Erro ao carregar questão ${widget.questionId}: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao carregar questão: $e')),
       );
@@ -92,10 +93,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
     dataService.recordLessonView(widget.questionId, widget.studySessionId);
 
     // Navigate to lesson screen
-    final params = widget.studySessionId != null
-        ? {'studySessionId': widget.studySessionId!}
-        : <String, String>{};
-    context.go('/lesson/${widget.questionId}', extra: params);
+    final studySessionParam = widget.studySessionId != null
+        ? '?studySessionId=${widget.studySessionId!}'
+        : '';
+    context.go('/lesson/${widget.questionId}$studySessionParam');
   }
 
   void _handleNextQuestion() {
@@ -118,10 +119,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
           if (questions.isNotEmpty) {
             final nextQuestion = questions.first;
-            final params = widget.studySessionId != null
-                ? {'studySessionId': widget.studySessionId!}
-                : <String, String>{};
-            context.go('/question/${nextQuestion.id}', extra: params);
+            final studySessionParam = widget.studySessionId != null
+                ? '?studySessionId=${widget.studySessionId!}'
+                : '';
+            context.go('/question/${nextQuestion.id}$studySessionParam');
             return;
           }
         }

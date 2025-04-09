@@ -1,0 +1,1 @@
+export PATH="$PATH:/Users/cleitonmouraloura/Documents/Projetos\ ENEM/flutter/bin"

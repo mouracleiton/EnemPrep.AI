@@ -287,6 +287,6 @@ class _StudyScreenState extends State<StudyScreen> {
 
     // Navigate to the first question
     final firstQuestion = questions.first;
-    context.go('/question/${firstQuestion.id}', extra: {'studySessionId': session.id});
+    context.go('/question/${firstQuestion.id}?studySessionId=${session.id}');
   }
 }

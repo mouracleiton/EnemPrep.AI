@@ -5,17 +5,27 @@ import 'navigation/app_router.dart';
 import 'services/services.dart';
 import 'theme/app_theme.dart';
 
-class EnemPrepApp extends StatelessWidget {
+class EnemPrepApp extends StatefulWidget {
   const EnemPrepApp({super.key});
+
+  @override
+  State<EnemPrepApp> createState() => _EnemPrepAppState();
+}
+
+class _EnemPrepAppState extends State<EnemPrepApp> {
+  @override
+  void initState() {
+    super.initState();
+    final dataService = Provider.of<DataService>(context, listen: false);
+    final storageService = Provider.of<StorageService>(context, listen: false);
+
+    // Set the storage service for the data service
+    dataService.setStorageService(storageService);
+  }
 
   @override
   Widget build(BuildContext context) {
     final dataService = Provider.of<DataService>(context);
-    final storageService = Provider.of<StorageService>(context);
-
-    // Set the storage service for the data service
-    dataService.setStorageService(storageService);
-
     final appRouter = AppRouter(dataService: dataService);
 
     return MaterialApp.router(

@@ -169,10 +169,10 @@ class _LessonScreenState extends State<LessonScreen> {
             child: ElevatedButton(
               onPressed: () {
                 // Return to the question screen
-                final params = widget.studySessionId != null
-                    ? {'studySessionId': widget.studySessionId!}
-                    : <String, String>{};
-                context.go('/question/${widget.questionId}', extra: params);
+                final studySessionParam = widget.studySessionId != null
+                    ? '?studySessionId=${widget.studySessionId!}'
+                    : '';
+                context.go('/question/${widget.questionId}$studySessionParam');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,

@@ -19,6 +19,7 @@ class DataService extends ChangeNotifier {
   // Loading state
   bool _isLoading = true;
   String _loadingStatus = 'Carregando...';
+  bool _dataLoaded = false;
 
   // Services
   late StorageService _storageService;
@@ -119,7 +120,7 @@ class DataService extends ChangeNotifier {
   // Carrega os dados do arquivo JSON local - versão simplificada
   Future<void> loadLocalData() async {
     // Evite carregar os dados novamente se já estiverem carregados
-    if (_questions.isNotEmpty && _exams.isNotEmpty) {
+    if (_dataLoaded) {
       _logger.i('Dados já carregados, pulando carregamento');
       return;
     }
@@ -178,6 +179,7 @@ class DataService extends ChangeNotifier {
         // Finalize o carregamento
         _isLoading = false;
         _loadingStatus = '';
+        _dataLoaded = true;
         notifyListeners();
 
         _logger.i('Dados carregados com sucesso: ${_questions.length} questões em ${_exams.length} exames');
