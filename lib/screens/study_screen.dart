@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import '../services/data_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/logger_config.dart';
+import '../widgets/widgets.dart';
 
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key});
@@ -25,10 +26,9 @@ class _StudyScreenState extends State<StudyScreen> {
     final dataService = Provider.of<DataService>(context);
     final availableDisciplines = dataService.getDisciplinesWithQuestions();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Estudo Personalizado'),
-      ),
+    return BaseScreenLayout(
+      title: 'Estudo Personalizado',
+      currentNavIndex: 1,
       body: Column(
         children: [
           Expanded(
@@ -268,11 +268,18 @@ class _StudyScreenState extends State<StudyScreen> {
 
     final dataService = Provider.of<DataService>(context, listen: false);
 
+    // Log para debug - antes de criar a sessão
+    _logger.i('Iniciando criação de sessão de estudo com disciplinas: $_selectedDisciplines');
+    _logger.i('Quantidade de questões solicitadas: $_questionCount');
+    _logger.i('Excluir questões já respondidas: $_excludeAnswered');
+
     // Create a new study session
     final session = dataService.createStudySession(
       _selectedDisciplines,
       _questionCount,
     );
+
+    _logger.i('Sessão de estudo criada com ID: ${session.id}');
 
     // Get random questions for the session
     final questions = dataService.getRandomQuestionsForStudy(
@@ -281,7 +288,10 @@ class _StudyScreenState extends State<StudyScreen> {
       _excludeAnswered,
     );
 
+    _logger.i('Obtidas ${questions.length} questões para a sessão');
+
     if (questions.isEmpty) {
+      _logger.e('Nenhuma questão disponível para os critérios selecionados');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Não há questões disponíveis para os critérios selecionados'),
@@ -290,14 +300,44 @@ class _StudyScreenState extends State<StudyScreen> {
       return;
     }
 
-    // Log para debug
-    _logger.i('Iniciando sessão de estudo: ${session.id}');
-    _logger.i('Primeira questão: ${questions.first.id}');
-
-    // Navigate to the first question
+    // Verificar a primeira questão
     final firstQuestion = questions.first;
+    _logger.i('Primeira questão selecionada: ${firstQuestion.id}');
+    _logger.i('Título da primeira questão: ${firstQuestion.title}');
+    _logger.i('Disciplina da primeira questão: ${firstQuestion.discipline}');
+    _logger.i('Ano da primeira questão: ${firstQuestion.year}');
+    _logger.i('Índice da primeira questão: ${firstQuestion.index}');
 
-    // Usar pushNamed em vez de go para garantir que a navegação funcione corretamente
-    context.go('/question/${firstQuestion.id}?studySessionId=${session.id}');
+    // Verificar se a questão existe no DataService
+    final questionCheck = dataService.getQuestionById(firstQuestion.id);
+    if (questionCheck == null) {
+      _logger.e('A questão com ID ${firstQuestion.id} não foi encontrada no DataService');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao iniciar sessão de estudo: questão não encontrada')),
+      );
+      return;
+    }
+
+    _logger.i('Questão verificada e encontrada no DataService');
+
+    // Construir a URL de navegação usando o formato correto
+    final navigationUrl = '/question/${firstQuestion.id}?studySessionId=${session.id}';
+    _logger.i('URL de navegação: $navigationUrl');
+
+    // Usar uma abordagem diferente para a navegação
+    try {
+      // Navegar para a tela de questão
+      _logger.i('Tentando navegar para a tela de questão...');
+
+      // Usar push em vez de go para garantir que a navegação funcione corretamente
+      context.push(navigationUrl);
+
+      _logger.i('Navegação realizada com sucesso');
+    } catch (e) {
+      _logger.e('Erro durante a navegação: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao iniciar sessão de estudo: $e')),
+      );
+    }
   }
 }

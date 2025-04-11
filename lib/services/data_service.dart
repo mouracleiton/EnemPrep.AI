@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -331,15 +332,23 @@ class DataService extends ChangeNotifier {
 
       try {
         // Defina o caminho do arquivo JSON
-        const String filePath = 'assets/json/questions.json';
-        _logger.i('Carregando questões do arquivo: $filePath');
+        const String assetFilePath = 'assets/json/questions.json';
+        const String absoluteFilePath = '/Users/cleitonmouraloura/Documents/Projetos ENEM/EnemPrep.AI/assets/json/questions.json';
+
+        _logger.i('Tentando carregar questões do arquivo absoluto: $absoluteFilePath');
 
         // Atualize a mensagem de carregamento
         _loadingStatus = 'Carregando questões...';
         notifyListeners();
 
-        // Carregue as questões do arquivo JSON
-        final List<Question> loadedQuestions = await _loadQuestionData(filePath);
+        // Primeiro tente carregar do caminho absoluto
+        List<Question> loadedQuestions = await _loadQuestionDataFromFile(absoluteFilePath);
+
+        // Se falhar, tente carregar do asset
+        if (loadedQuestions.isEmpty) {
+          _logger.i('Falha ao carregar do caminho absoluto, tentando carregar do asset: $assetFilePath');
+          loadedQuestions = await _loadQuestionData(assetFilePath);
+        }
 
         // Se não houver questões, use os dados de exemplo
         if (loadedQuestions.isEmpty) {
@@ -362,12 +371,16 @@ class DataService extends ChangeNotifier {
         final Set<int> years = _questions.map((q) => q.year).toSet();
         _logger.i('Encontrados ${years.length} anos diferentes');
 
-        // Crie objetos de exame para cada ano
+        // Get unique disciplines and languages from questions
+        final Set<Discipline> disciplines = _questions.map((q) => Discipline(label: q.discipline, value: q.discipline)).toSet();
+        final Set<Language> languages = _questions.where((q) => q.language != null).map((q) => Language(label: q.language!, value: q.language!)).toSet();
+
+        // Create exam objects for each year
         _exams = years.map((year) => Exam(
           year: year,
           title: 'ENEM $year',
-          disciplines: _mockData['exams'][0]['disciplines'].map<Discipline>((d) => Discipline.fromJson(d)).toList(),
-          languages: _mockData['exams'][0]['languages'].map<Language>((l) => Language.fromJson(l)).toList(),
+          disciplines: disciplines.toList(),
+          languages: languages.toList(),
         )).toList()..sort((a, b) => b.year.compareTo(a.year));
 
         // Finalize o carregamento
@@ -421,14 +434,47 @@ class DataService extends ChangeNotifier {
     }
   }
 
-  // Load question data from a JSON file - simplified version
+  // Load question data from a JSON file in assets - simplified version
   Future<List<Question>> _loadQuestionData(String filePath) async {
     try {
       // Load the JSON file directly from assets
-      _logger.i('Carregando arquivo JSON: $filePath');
+      _logger.i('Carregando arquivo JSON do asset: $filePath');
       final String jsonData = await rootBundle.loadString(filePath);
       _logger.i('Arquivo JSON carregado com sucesso');
 
+      return _processJsonData(jsonData);
+    } catch (e) {
+      _logger.e('Erro ao carregar questões do asset: $e');
+      return [];
+    }
+  }
+
+  // Load question data from a file in the file system
+  Future<List<Question>> _loadQuestionDataFromFile(String filePath) async {
+    try {
+      // Load the JSON file from the file system
+      _logger.i('Carregando arquivo JSON do sistema de arquivos: $filePath');
+      final file = File(filePath);
+
+      // Check if file exists
+      if (!await file.exists()) {
+        _logger.e('Arquivo não encontrado: $filePath');
+        return [];
+      }
+
+      final String jsonData = await file.readAsString();
+      _logger.i('Arquivo JSON carregado com sucesso');
+
+      return _processJsonData(jsonData);
+    } catch (e) {
+      _logger.e('Erro ao carregar questões do arquivo: $e');
+      return [];
+    }
+  }
+
+  // Process JSON data and convert to Question objects
+  List<Question> _processJsonData(String jsonData) {
+    try {
       // Decode the JSON data
       final List<dynamic> jsonList = jsonDecode(jsonData) as List<dynamic>;
       _logger.i('JSON decodificado com sucesso: ${jsonList.length} questões encontradas');
@@ -450,7 +496,7 @@ class DataService extends ChangeNotifier {
       _logger.i('${questions.length} questões processadas com sucesso');
       return questions;
     } catch (e) {
-      _logger.e('Erro ao carregar questões: $e');
+      _logger.e('Erro ao processar dados JSON: $e');
       return [];
     }
   }
@@ -485,9 +531,17 @@ class DataService extends ChangeNotifier {
     return _questions.where((q) => q.language == language).toList();
   }
 
+  // Get all questions
+  List<Question> getAllQuestions() {
+    return List<Question>.from(_questions);
+  }
+
   // Get question by ID
   Question? getQuestionById(String id) {
-    if (id.isEmpty) return null;
+    if (id.isEmpty) {
+      _logger.w('Empty question ID');
+      return null;
+    }
 
     final parts = id.split('-');
     if (parts.length != 2) {
@@ -503,10 +557,14 @@ class DataService extends ChangeNotifier {
       return null;
     }
 
-    return _questions.firstWhere(
-      (q) => q.year == year && q.index == index,
-      orElse: () => throw Exception('Question not found: $id'),
-    );
+    try {
+      return _questions.firstWhere(
+        (q) => q.year == year && q.index == index,
+      );
+    } catch (e) {
+      _logger.w('Question not found: $id');
+      return null;
+    }
   }
 
   // Save user answer
@@ -600,10 +658,14 @@ class DataService extends ChangeNotifier {
 
   // Get study session by ID
   StudySession? getStudySessionById(String id) {
-    return _studySessions.firstWhere(
-      (s) => s.id == id,
-      orElse: () => throw Exception('Study session not found: $id'),
-    );
+    try {
+      return _studySessions.firstWhere(
+        (s) => s.id == id,
+      );
+    } catch (e) {
+      _logger.w('Study session not found: $id');
+      return null;
+    }
   }
 
   // Get random questions for study

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../services/data_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -32,11 +33,9 @@ class MainScreen extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Início'),
-        centerTitle: true,
-      ),
+    return BaseScreenLayout(
+      title: 'Início',
+      currentNavIndex: 0,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.only(bottom: 80),
@@ -48,7 +47,11 @@ class MainScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: _buildSupportButton(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.go('/support'),
+        backgroundColor: AppTheme.errorColor,
+        child: const Icon(Icons.favorite, color: Colors.white),
+      ),
     );
   }
 
@@ -277,34 +280,5 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSupportButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: ElevatedButton(
-        onPressed: () => context.go('/support'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.errorColor,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.favorite, color: Colors.white),
-            SizedBox(width: 8),
-            Text(
-              'Apoie o Desenvolvedor',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
+import 'package:provider/provider.dart';
+
+import '../services/essay_evaluation_service.dart';
 
 import '../theme/app_theme.dart';
 
@@ -257,26 +259,50 @@ class _EssayInputScreenState extends State<EssayInputScreen> {
     return text.split('\n').length;
   }
 
-  void _submitEssay() {
+  void _submitEssay() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isSubmitting = true;
       });
 
-      // Simulate API call
-      Future.delayed(const Duration(seconds: 2), () {
+      try {
+        // Get the essay evaluation service
+        final essayEvaluationService = Provider.of<EssayEvaluationService>(context, listen: false);
+
+        // Validate essay length
+        final validation = essayEvaluationService.validateEssayLength(_essayController.text);
+
+        if (!validation['valid']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(validation['message'] ?? 'Sua redação não atende aos requisitos de tamanho.')),
+          );
+          setState(() {
+            _isSubmitting = false;
+          });
+          return;
+        }
+
+        // Evaluate the essay
+        final evaluation = await essayEvaluationService.evaluateEssay(
+          _titleController.text,
+          _essayController.text,
+        );
+
         if (!mounted) return;
+
+        // Navigate to the result screen
+        context.go('/essay-result/${evaluation.id}');
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao avaliar redação: $e')),
+        );
 
         setState(() {
           _isSubmitting = false;
         });
-
-        // Generate a random ID for the evaluation
-        final evaluationId = const Uuid().v4();
-
-        // Navigate to the result screen
-        context.go('/essay-result/$evaluationId');
-      });
+      }
     }
   }
 }

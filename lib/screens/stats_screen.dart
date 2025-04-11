@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../services/data_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -13,11 +14,10 @@ class StatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dataService = Provider.of<DataService>(context);
     final stats = dataService.getUserStatistics();
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Estatísticas'),
-      ),
+
+    return BaseScreenLayout(
+      title: 'Estatísticas',
+      currentNavIndex: 2,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -40,7 +40,7 @@ class StatsScreen extends StatelessWidget {
     final total = stats['total'] as int;
     final correct = stats['correct'] as int;
     final lessonsViewed = stats['lessonsViewed'] as int;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration,
@@ -115,11 +115,11 @@ class StatsScreen extends StatelessWidget {
     final total = stats['total'] as int;
     final correct = stats['correct'] as int;
     final incorrect = stats['incorrect'] as int;
-    
+
     // Calculate percentages
     final correctPercentage = total > 0 ? (correct / total) * 100 : 0.0;
     final incorrectPercentage = total > 0 ? (incorrect / total) * 100 : 0.0;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration,
@@ -220,7 +220,7 @@ class StatsScreen extends StatelessWidget {
 
   Widget _buildDisciplineBreakdown(Map<String, dynamic> stats) {
     final disciplineStats = stats['disciplineStats'] as Map<String, dynamic>?;
-    
+
     if (disciplineStats == null || disciplineStats.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -248,14 +248,14 @@ class StatsScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     final disciplineLabels = {
       'ciencias-humanas': 'Ciências Humanas',
       'ciencias-natureza': 'Ciências da Natureza',
       'linguagens': 'Linguagens',
       'matematica': 'Matemática',
     };
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration,
@@ -273,7 +273,7 @@ class StatsScreen extends StatelessWidget {
             final total = stats['total'] as int;
             final correct = stats['correct'] as int;
             final accuracy = total > 0 ? (correct / total) * 100 : 0.0;
-            
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Column(
@@ -347,7 +347,7 @@ class StatsScreen extends StatelessWidget {
 
   Widget _buildStudySessionsList(DataService dataService) {
     final sessions = dataService.studySessions;
-    
+
     if (sessions.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -375,9 +375,9 @@ class StatsScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.cardDecoration,
@@ -392,7 +392,7 @@ class StatsScreen extends StatelessWidget {
           ...sessions.map((session) {
             final date = DateTime.fromMillisecondsSinceEpoch(session.timestamp);
             final accuracy = session.accuracyPercentage;
-            
+
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
@@ -457,7 +457,7 @@ class StatsScreen extends StatelessWidget {
       'linguagens': 'Linguagens',
       'matematica': 'Matemática',
     };
-    
+
     return disciplines
         .map((d) => disciplineLabels[d] ?? d)
         .join(', ');

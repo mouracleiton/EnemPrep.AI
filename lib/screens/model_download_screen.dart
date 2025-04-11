@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 
 class ModelDownloadScreen extends StatefulWidget {
   const ModelDownloadScreen({super.key});
@@ -16,10 +17,9 @@ class _ModelDownloadScreenState extends State<ModelDownloadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Download do Modelo de IA'),
-      ),
+    return BaseScreenLayout(
+      title: 'Download do Modelo de IA',
+      currentNavIndex: 4,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

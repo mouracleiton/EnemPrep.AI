@@ -18,9 +18,13 @@ class _EnemPrepAppState extends State<EnemPrepApp> {
     super.initState();
     final dataService = Provider.of<DataService>(context, listen: false);
     final storageService = Provider.of<StorageService>(context, listen: false);
+    final essayEvaluationService = Provider.of<EssayEvaluationService>(context, listen: false);
 
     // Set the storage service for the data service
     dataService.setStorageService(storageService);
+
+    // Set the storage service for the essay evaluation service
+    essayEvaluationService.setStorageService(storageService);
   }
 
   @override

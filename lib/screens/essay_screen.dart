@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 
 class EssayScreen extends StatelessWidget {
   const EssayScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Redação ENEM'),
-      ),
+    return BaseScreenLayout(
+      title: 'Redação ENEM',
+      currentNavIndex: 3,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -125,6 +125,14 @@ class EssayScreen extends StatelessWidget {
             description: 'Selecione uma imagem da sua galeria',
             icon: Icons.photo_library,
             onTap: () => _showModelRequiredDialog(context),
+          ),
+          const SizedBox(height: 16),
+          _buildOptionButton(
+            context,
+            title: 'Histórico de Redações',
+            description: 'Veja suas redações anteriores e avaliações',
+            icon: Icons.history,
+            onTap: () => context.go('/essay-history'),
           ),
         ],
       ),

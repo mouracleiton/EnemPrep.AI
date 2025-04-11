@@ -13,14 +13,15 @@ import '../screens/support_screen.dart';
 import '../screens/essay_screen.dart';
 import '../screens/essay_input_screen.dart';
 import '../screens/essay_result_screen.dart';
+import '../screens/essay_history_screen.dart';
 import '../screens/exams_list_screen.dart';
 import '../screens/exam_detail_screen.dart';
 
 class AppRouter {
   final DataService dataService;
-  
+
   AppRouter({required this.dataService});
-  
+
   late final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -87,6 +88,10 @@ class AppRouter {
           final evaluationId = state.pathParameters['evaluationId'] ?? '';
           return EssayResultScreen(evaluationId: evaluationId);
         },
+      ),
+      GoRoute(
+        path: '/essay-history',
+        builder: (context, state) => const EssayHistoryScreen(),
       ),
       GoRoute(
         path: '/exams',

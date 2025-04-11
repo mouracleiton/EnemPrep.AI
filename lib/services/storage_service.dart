@@ -14,6 +14,7 @@ class StorageService {
   // Keys for SharedPreferences
   static const String _userAnswersKey = 'user_answers';
   static const String _studySessionsKey = 'study_sessions';
+  static const String _essaysKey = 'essays';
   static const String _appVersionKey = 'app_version';
 
   // Initialize the service
@@ -21,7 +22,7 @@ class StorageService {
     _prefs = await SharedPreferences.getInstance();
     _appDocDir = await getApplicationDocumentsDirectory();
     _cacheDir = await getTemporaryDirectory();
-    
+
     // Create necessary directories
     await _createDirectories();
   }
@@ -32,19 +33,19 @@ class StorageService {
     final imagesDir = Directory('${_appDocDir.path}/assets/images');
     final jsonDir = Directory('${_appDocDir.path}/assets/json');
     final cacheImagesDir = Directory('${_cacheDir.path}/images');
-    
+
     if (!await assetsDir.exists()) {
       await assetsDir.create();
     }
-    
+
     if (!await imagesDir.exists()) {
       await imagesDir.create();
     }
-    
+
     if (!await jsonDir.exists()) {
       await jsonDir.create();
     }
-    
+
     if (!await cacheImagesDir.exists()) {
       await cacheImagesDir.create();
     }
@@ -64,7 +65,7 @@ class StorageService {
   List<UserAnswer> loadUserAnswers() {
     final String? data = _prefs.getString(_userAnswersKey);
     if (data == null) return [];
-    
+
     try {
       final List<dynamic> jsonList = jsonDecode(data);
       return jsonList.map((json) => UserAnswer.fromJson(json)).toList();
@@ -76,7 +77,7 @@ class StorageService {
 
   // Save user answers to storage
   Future<void> saveUserAnswers(List<UserAnswer> answers) async {
-    final List<Map<String, dynamic>> jsonList = 
+    final List<Map<String, dynamic>> jsonList =
         answers.map((answer) => answer.toJson()).toList();
     await _prefs.setString(_userAnswersKey, jsonEncode(jsonList));
   }
@@ -85,7 +86,7 @@ class StorageService {
   List<StudySession> loadStudySessions() {
     final String? data = _prefs.getString(_studySessionsKey);
     if (data == null) return [];
-    
+
     try {
       final List<dynamic> jsonList = jsonDecode(data);
       return jsonList.map((json) => StudySession.fromJson(json)).toList();
@@ -97,23 +98,33 @@ class StorageService {
 
   // Save study sessions to storage
   Future<void> saveStudySessions(List<StudySession> sessions) async {
-    final List<Map<String, dynamic>> jsonList = 
+    final List<Map<String, dynamic>> jsonList =
         sessions.map((session) => session.toJson()).toList();
     await _prefs.setString(_studySessionsKey, jsonEncode(jsonList));
   }
 
+  // Get essays from storage
+  String? getEssays() {
+    return _prefs.getString(_essaysKey);
+  }
+
+  // Save essays to storage
+  Future<void> saveEssays(String essaysJson) async {
+    await _prefs.setString(_essaysKey, essaysJson);
+  }
+
   // Get the path to the assets directory
   String get assetsPath => '${_appDocDir.path}/assets';
-  
+
   // Get the path to the images directory
   String get imagesPath => '${_appDocDir.path}/assets/images';
-  
+
   // Get the path to the json directory
   String get jsonPath => '${_appDocDir.path}/assets/json';
-  
+
   // Get the path to the cache directory
   String get cachePath => _cacheDir.path;
-  
+
   // Get the path to the cache images directory
   String get cacheImagesPath => '${_cacheDir.path}/images';
 
@@ -178,7 +189,7 @@ class StorageService {
       await cacheDir.delete(recursive: true);
       await cacheDir.create();
     }
-    
+
     final cacheImagesDir = Directory(cacheImagesPath);
     if (!await cacheImagesDir.exists()) {
       await cacheImagesDir.create();

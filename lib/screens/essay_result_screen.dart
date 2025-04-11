@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../models/essay_evaluation.dart';
+import '../services/essay_evaluation_service.dart';
 
 import '../theme/app_theme.dart';
 
@@ -14,8 +18,41 @@ class EssayResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mock data for demonstration
-    final evaluationData = _getMockEvaluationData();
+    // Get the essay evaluation service
+    final essayEvaluationService = Provider.of<EssayEvaluationService>(context);
+
+    // Get the evaluation by ID
+    final evaluation = essayEvaluationService.getEssayById(evaluationId);
+
+    // If evaluation is not found, show error
+    if (evaluation == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Resultado da Avaliação'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text(
+                'Avaliação não encontrada',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => context.go('/essay'),
+                child: const Text('Voltar para Redações'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Convert evaluation to the format expected by the UI
+    final evaluationData = _convertEvaluationToData(evaluation);
 
     return Scaffold(
       appBar: AppBar(
@@ -382,51 +419,53 @@ class EssayResultScreen extends StatelessWidget {
     }
   }
 
-  Map<String, dynamic> _getMockEvaluationData() {
+  // Convert EssayEvaluation to the format expected by the UI
+  Map<String, dynamic> _convertEvaluationToData(EssayEvaluation evaluation) {
     return {
-      'title': 'Os desafios da educação no Brasil',
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-      'totalScore': 720,
+      'title': evaluation.title,
+      'timestamp': evaluation.timestamp,
+      'totalScore': evaluation.totalScore,
       'competences': [
         {
           'name': 'Competência 1',
           'description': 'Domínio da norma culta',
-          'score': 160,
+          'score': evaluation.competencyScores.competency1,
           'maxScore': 200,
         },
         {
           'name': 'Competência 2',
           'description': 'Compreensão da proposta e aplicação de conceitos',
-          'score': 180,
+          'score': evaluation.competencyScores.competency2,
           'maxScore': 200,
         },
         {
           'name': 'Competência 3',
           'description': 'Capacidade de argumentação',
-          'score': 140,
+          'score': evaluation.competencyScores.competency3,
           'maxScore': 200,
         },
         {
           'name': 'Competência 4',
           'description': 'Coesão textual',
-          'score': 120,
+          'score': evaluation.competencyScores.competency4,
           'maxScore': 200,
         },
         {
           'name': 'Competência 5',
           'description': 'Proposta de intervenção',
-          'score': 120,
+          'score': evaluation.competencyScores.competency5,
           'maxScore': 200,
         },
       ],
-      'feedback': 'Sua redação apresenta boa estrutura e argumentação consistente. O texto demonstra domínio da norma culta, com poucos desvios gramaticais. A argumentação é coerente, mas poderia ser mais aprofundada em alguns pontos. A proposta de intervenção é adequada, mas poderia ser mais detalhada.',
+      'feedback': evaluation.feedback.generalAnalysis,
       'suggestions': [
-        'Aprofunde mais os argumentos com dados e exemplos concretos',
-        'Desenvolva melhor a conclusão, detalhando mais a proposta de intervenção',
-        'Evite repetições de palavras e expressões',
-        'Utilize conectivos mais variados para melhorar a coesão textual',
+        evaluation.feedback.competency1Feedback,
+        evaluation.feedback.competency2Feedback,
+        evaluation.feedback.competency3Feedback,
+        evaluation.feedback.competency4Feedback,
+        evaluation.feedback.competency5Feedback,
       ],
-      'essayText': 'A educação no Brasil enfrenta diversos desafios que comprometem o desenvolvimento pleno dos estudantes e, consequentemente, do país. Entre esses desafios, destacam-se a desigualdade de acesso, a falta de infraestrutura adequada e a desvalorização dos profissionais da educação.\n\nPrimeiramente, a desigualdade de acesso à educação de qualidade é um problema crônico no Brasil. Enquanto algumas regiões contam com escolas bem equipadas e professores qualificados, outras sofrem com a falta de recursos básicos. Isso cria um abismo educacional que perpetua as desigualdades sociais e econômicas.\n\nAlém disso, a infraestrutura precária de muitas escolas públicas compromete o processo de ensino-aprendizagem. Salas de aula superlotadas, falta de laboratórios, bibliotecas desatualizadas e ausência de acesso à internet são apenas alguns dos problemas enfrentados por estudantes e professores.\n\nOutro ponto crucial é a desvalorização dos profissionais da educação. Baixos salários, condições de trabalho inadequadas e falta de oportunidades de formação continuada desmotivam os professores e afetam diretamente a qualidade do ensino oferecido.\n\nDiante desse cenário, é fundamental que o governo, em parceria com a sociedade civil e instituições privadas, implemente políticas públicas eficientes para enfrentar esses desafios. Investimentos em infraestrutura escolar, valorização dos professores por meio de melhores salários e planos de carreira, e programas de inclusão digital são medidas essenciais.\n\nPortanto, para superar os desafios da educação no Brasil, é necessário um esforço conjunto que envolva todos os setores da sociedade. Somente assim será possível construir um sistema educacional mais justo, inclusivo e capaz de formar cidadãos preparados para os desafios do século XXI.',
+      'essayText': evaluation.text,
     };
   }
 }
